@@ -1,34 +1,37 @@
 <!DOCTYPE html>
 <html>
+
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <meta name="description" content="Dpi-enabled-ovs : Extending OVS with DPI functionalities">
 
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>Dpi-enabled-ovs by kspviswa</title>
+    <title>Dpi-enabled-ovs</title>
   </head>
 
   <body>
-    <header>
-      <div class="inner">
-        <h1>Dpi-enabled-ovs</h1>
-        <h2>Extending OVS with DPI functionalities</h2>
-        <a href="https://github.com/kspviswa/dpi-enabled-ovs" class="button"><small>View project on</small> GitHub</a>
-      </div>
-    </header>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h3>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/kspviswa/dpi-enabled-ovs">View on GitHub</a>
+
+          <h1 id="project_title">Dpi-enabled-ovs</h1>
+          <h2 id="project_tagline">Extending OVS with DPI functionalities</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/kspviswa/dpi-enabled-ovs/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/kspviswa/dpi-enabled-ovs/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
 <a id="what-is-dpi" class="anchor" href="#what-is-dpi" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is DPI</h3>
 
 <p>By definition, DPI – Deep Packet Inspection means, determining the application (Ex Youtube, Skype etc) by analyzing the Ethernet frames. Advantage of DPI is that, enterprise level decisions can be made based upon the analyzed data.  (Ex. Boost the bandwidth, Determine the application level network usage etc.)</p>
@@ -51,6 +54,21 @@
 <p>The scope of PoC to get hands-on in bringing DPI framework under SDN ecosystem. In order to do this, SNORT (popular DPI engine) was integrated with OVS and end to end DPI flow was captured and tested. This proves the feasibility of project thesis that I had took for my dissertation work.</p>
 
 <p>Below is the topology that was used to accomplish the PoC</p>
+
+<p><img src="https://cloud.githubusercontent.com/assets/7476271/6752040/e3aef3ac-cf30-11e4-94cd-5f6f61a9ff0a.jpg" alt="topology switch"></p>
+
+<p>Please refer <a href="https://github.com/kspviswa/dpi-enabled-ovs/wiki/Environment-Set-up">wiki</a> for setting up above topology.</p>
+
+<h2>
+<a id="end-end-flow" class="anchor" href="#end-end-flow" aria-hidden="true"><span class="octicon octicon-link"></span></a>End-End Flow</h2>
+
+<p>Just by adding DPI along with OVS, doesn't make any sense, until there is a full end-end solution. We came up with below components, comprising of middleware and north-bound business applications to provision the OVS based on the analysis that is done on DPI data.</p>
+
+<p><img src="https://cloud.githubusercontent.com/assets/7476271/6752049/f534f892-cf30-11e4-980a-cd9ff0d7f3cf.jpg" alt="components"></p>
+
+<p>Following image, provides high-level traffic flow between the components.</p>
+
+<p><img src="https://cloud.githubusercontent.com/assets/7476271/6752058/ffc20af2-cf30-11e4-91eb-8eed70d97ee9.jpg" alt="traffic-flow"></p>
 
 <pre><code>$ cd your_repo_root/repo_name
 $ git fetch origin
@@ -78,25 +96,18 @@ $ git checkout gh-pages
 <a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
 
 <p>Having trouble with Pages? Check out the documentation at <a href="https://help.github.com/pages">https://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-        </section>
-
-        <aside id="sidebar">
-          <a href="https://github.com/kspviswa/dpi-enabled-ovs/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/kspviswa/dpi-enabled-ovs/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
-
-          <p class="repo-owner"><a href="https://github.com/kspviswa/dpi-enabled-ovs"></a> is maintained by <a href="https://github.com/kspviswa">kspviswa</a>.</p>
-
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
+      </section>
     </div>
 
-  
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Dpi-enabled-ovs maintained by <a href="https://github.com/kspviswa">kspviswa</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
   </body>
 </html>
