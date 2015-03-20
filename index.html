@@ -29,9 +29,28 @@
       <div class="inner clearfix">
         <section id="main-content">
           <h3>
-<a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+<a id="what-is-dpi" class="anchor" href="#what-is-dpi" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is DPI</h3>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>By definition, DPI – Deep Packet Inspection means, determining the application (Ex Youtube, Skype etc) by analyzing the Ethernet frames. Advantage of DPI is that, enterprise level decisions can be made based upon the analyzed data.  (Ex. Boost the bandwidth, Determine the application level network usage etc.)</p>
+
+<p>It is important to understand that, DPI is not, merely a packet analysis, but it also provides capabilities for network steering upon the data it receives from the network. Though the traffic analysis can be made centralized in the controller plane, the effective classification of packet can be done, only at the switch level.</p>
+
+<h3>
+<a id="why-dpi-in-sdn-ecosystem" class="anchor" href="#why-dpi-in-sdn-ecosystem" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why DPI in SDN ecosystem</h3>
+
+<p>If you look at the present scenario in traditional networking ecosystem, DPI is performed by highly specialized hardware with proprietary DPI techniques. This makes sense, as long as the network is made of traditional hardware oriented set ups. Industry had started to embrace the SDN ecosystem, where-in, any commodity hardware can be used to virtualize network functions (NFV). Hence DPI in specialized hardware doesn’t make sense anymore. DPI has to be even virtualized.</p>
+
+<h3>
+<a id="dpi-in-ovs" class="anchor" href="#dpi-in-ovs" aria-hidden="true"><span class="octicon octicon-link"></span></a>DPI in OVS</h3>
+
+<p>Presently there is no DPI enabled soft switch, especially in the SDN ecosystem. The aim of this dissertation is to provide DPI functionalities as part of Open vSwitch, so that any controller can take advantage of the DPI information and leverage the DPI functionalities to upper management layers. </p>
+
+<h3>
+<a id="proof-of-concept---demo" class="anchor" href="#proof-of-concept---demo" aria-hidden="true"><span class="octicon octicon-link"></span></a>Proof Of Concept - demo</h3>
+
+<p>The scope of PoC to get hands-on in bringing DPI framework under SDN ecosystem. In order to do this, SNORT (popular DPI engine) was integrated with OVS and end to end DPI flow was captured and tested. This proves the feasibility of project thesis that I had took for my dissertation work.</p>
+
+<p>Below is the topology that was used to accomplish the PoC</p>
 
 <pre><code>$ cd your_repo_root/repo_name
 $ git fetch origin
