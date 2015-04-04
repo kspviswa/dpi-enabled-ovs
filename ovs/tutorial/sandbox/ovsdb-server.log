@@ -1,0 +1,5 @@
+2015-03-30T17:44:20.920Z|00001|vlog|INFO|opened log file /home/kspviswa/workspace/ovs/tutorial/sandbox/ovsdb-server.log
+2015-03-30T17:44:20.934Z|00002|ovsdb_server|INFO|ovsdb-server (Open vSwitch) 2.3.90
+2015-03-30T17:44:30.947Z|00003|memory|INFO|1412 kB peak resident set size after 10.0 seconds
+2015-03-30T17:44:30.947Z|00004|memory|INFO|monitors:1 sessions:1
+2015-03-30T17:45:11.393Z|00005|fatal_signal|WARN|terminating with signal 15 (Terminated)

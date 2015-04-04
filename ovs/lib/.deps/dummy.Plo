@@ -1,0 +1,10 @@
+lib/dummy.lo: lib/dummy.c /usr/include/stdc-predef.h config.h lib/dummy.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stdbool.h
+
+/usr/include/stdc-predef.h:
+
+config.h:
+
+lib/dummy.h:
+
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdbool.h:

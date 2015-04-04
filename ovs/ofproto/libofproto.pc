@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libofproto
+Description: OpenFlow library of Open vSwitch
+Version: 2.3.90
+Libs: -L${libdir} -lofproto
+Libs.private: -latomic -lpthread -lrt -lm 
+Cflags: -I${includedir}

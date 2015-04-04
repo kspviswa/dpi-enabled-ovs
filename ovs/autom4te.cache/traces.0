@@ -1,0 +1,2839 @@
+m4trace:/usr/share/aclocal/size_max.m4:9: -1- AC_DEFUN([gl_SIZE_MAX], [
+  AC_CHECK_HEADERS([stdint.h])
+  dnl First test whether the system already has SIZE_MAX.
+  AC_CACHE_CHECK([for SIZE_MAX], [gl_cv_size_max], [
+    gl_cv_size_max=
+    AC_EGREP_CPP([Found it], [
+#include <limits.h>
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#ifdef SIZE_MAX
+Found it
+#endif
+], [gl_cv_size_max=yes])
+    if test -z "$gl_cv_size_max"; then
+      dnl Define it ourselves. Here we assume that the type 'size_t' is not wider
+      dnl than the type 'unsigned long'. Try hard to find a definition that can
+      dnl be used in a preprocessor #if, i.e. doesn't contain a cast.
+      AC_COMPUTE_INT([size_t_bits_minus_1], [sizeof (size_t) * CHAR_BIT - 1],
+        [#include <stddef.h>
+#include <limits.h>], [size_t_bits_minus_1=])
+      AC_COMPUTE_INT([fits_in_uint], [sizeof (size_t) <= sizeof (unsigned int)],
+        [#include <stddef.h>], [fits_in_uint=])
+      if test -n "$size_t_bits_minus_1" && test -n "$fits_in_uint"; then
+        if test $fits_in_uint = 1; then
+          dnl Even though SIZE_MAX fits in an unsigned int, it must be of type
+          dnl 'unsigned long' if the type 'size_t' is the same as 'unsigned long'.
+          AC_COMPILE_IFELSE(
+            [AC_LANG_PROGRAM(
+               [[#include <stddef.h>
+                 extern size_t foo;
+                 extern unsigned long foo;
+               ]],
+               [[]])],
+            [fits_in_uint=0])
+        fi
+        dnl We cannot use 'expr' to simplify this expression, because 'expr'
+        dnl works only with 'long' integers in the host environment, while we
+        dnl might be cross-compiling from a 32-bit platform to a 64-bit platform.
+        if test $fits_in_uint = 1; then
+          gl_cv_size_max="(((1U << $size_t_bits_minus_1) - 1) * 2 + 1)"
+        else
+          gl_cv_size_max="(((1UL << $size_t_bits_minus_1) - 1) * 2 + 1)"
+        fi
+      else
+        dnl Shouldn't happen, but who knows...
+        gl_cv_size_max='((size_t)~(size_t)0)'
+      fi
+    fi
+  ])
+  if test "$gl_cv_size_max" != yes; then
+    AC_DEFINE_UNQUOTED([SIZE_MAX], [$gl_cv_size_max],
+      [Define as the maximum value of type 'size_t', if the system doesn't define it.])
+  fi
+  dnl Don't redefine SIZE_MAX in config.h if config.h is re-included after
+  dnl <stdint.h>. Remember that the #undef in AH_VERBATIM gets replaced with
+  dnl #define by AC_DEFINE_UNQUOTED.
+  AH_VERBATIM([SIZE_MAX],
+[/* Define as the maximum value of type 'size_t', if the system doesn't define
+   it. */
+#ifndef SIZE_MAX
+# undef SIZE_MAX
+#endif])
+])
+m4trace:/usr/share/aclocal-1.14/amversion.m4:14: -1- AC_DEFUN([AM_AUTOMAKE_VERSION], [am__api_version='1.14'
+dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
+dnl require some minimum version.  Point them to the right macro.
+m4_if([$1], [1.14.1], [],
+      [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
+])
+m4trace:/usr/share/aclocal-1.14/amversion.m4:33: -1- AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION], [AM_AUTOMAKE_VERSION([1.14.1])dnl
+m4_ifndef([AC_AUTOCONF_VERSION],
+  [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
+_AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
+m4trace:/usr/share/aclocal-1.14/auxdir.m4:47: -1- AC_DEFUN([AM_AUX_DIR_EXPAND], [dnl Rely on autoconf to set up CDPATH properly.
+AC_PREREQ([2.50])dnl
+# expand $ac_aux_dir to an absolute path
+am_aux_dir=`cd $ac_aux_dir && pwd`
+])
+m4trace:/usr/share/aclocal-1.14/cond.m4:12: -1- AC_DEFUN([AM_CONDITIONAL], [AC_PREREQ([2.52])dnl
+ m4_if([$1], [TRUE],  [AC_FATAL([$0: invalid condition: $1])],
+       [$1], [FALSE], [AC_FATAL([$0: invalid condition: $1])])dnl
+AC_SUBST([$1_TRUE])dnl
+AC_SUBST([$1_FALSE])dnl
+_AM_SUBST_NOTMAKE([$1_TRUE])dnl
+_AM_SUBST_NOTMAKE([$1_FALSE])dnl
+m4_define([_AM_COND_VALUE_$1], [$2])dnl
+if $2; then
+  $1_TRUE=
+  $1_FALSE='#'
+else
+  $1_TRUE='#'
+  $1_FALSE=
+fi
+AC_CONFIG_COMMANDS_PRE(
+[if test -z "${$1_TRUE}" && test -z "${$1_FALSE}"; then
+  AC_MSG_ERROR([[conditional "$1" was never defined.
+Usually this means the macro was only invoked conditionally.]])
+fi])])
+m4trace:/usr/share/aclocal-1.14/depend.m4:26: -1- AC_DEFUN([_AM_DEPENDENCIES], [AC_REQUIRE([AM_SET_DEPDIR])dnl
+AC_REQUIRE([AM_OUTPUT_DEPENDENCY_COMMANDS])dnl
+AC_REQUIRE([AM_MAKE_INCLUDE])dnl
+AC_REQUIRE([AM_DEP_TRACK])dnl
+
+m4_if([$1], [CC],   [depcc="$CC"   am_compiler_list=],
+      [$1], [CXX],  [depcc="$CXX"  am_compiler_list=],
+      [$1], [OBJC], [depcc="$OBJC" am_compiler_list='gcc3 gcc'],
+      [$1], [OBJCXX], [depcc="$OBJCXX" am_compiler_list='gcc3 gcc'],
+      [$1], [UPC],  [depcc="$UPC"  am_compiler_list=],
+      [$1], [GCJ],  [depcc="$GCJ"  am_compiler_list='gcc3 gcc'],
+                    [depcc="$$1"   am_compiler_list=])
+
+AC_CACHE_CHECK([dependency style of $depcc],
+               [am_cv_$1_dependencies_compiler_type],
+[if test -z "$AMDEP_TRUE" && test -f "$am_depcomp"; then
+  # We make a subdir and do the tests there.  Otherwise we can end up
+  # making bogus files that we don't know about and never remove.  For
+  # instance it was reported that on HP-UX the gcc test will end up
+  # making a dummy file named 'D' -- because '-MD' means "put the output
+  # in D".
+  rm -rf conftest.dir
+  mkdir conftest.dir
+  # Copy depcomp to subdir because otherwise we won't find it if we're
+  # using a relative directory.
+  cp "$am_depcomp" conftest.dir
+  cd conftest.dir
+  # We will build objects and dependencies in a subdirectory because
+  # it helps to detect inapplicable dependency modes.  For instance
+  # both Tru64's cc and ICC support -MD to output dependencies as a
+  # side effect of compilation, but ICC will put the dependencies in
+  # the current directory while Tru64 will put them in the object
+  # directory.
+  mkdir sub
+
+  am_cv_$1_dependencies_compiler_type=none
+  if test "$am_compiler_list" = ""; then
+     am_compiler_list=`sed -n ['s/^#*\([a-zA-Z0-9]*\))$/\1/p'] < ./depcomp`
+  fi
+  am__universal=false
+  m4_case([$1], [CC],
+    [case " $depcc " in #(
+     *\ -arch\ *\ -arch\ *) am__universal=true ;;
+     esac],
+    [CXX],
+    [case " $depcc " in #(
+     *\ -arch\ *\ -arch\ *) am__universal=true ;;
+     esac])
+
+  for depmode in $am_compiler_list; do
+    # Setup a source with many dependencies, because some compilers
+    # like to wrap large dependency lists on column 80 (with \), and
+    # we should not choose a depcomp mode which is confused by this.
+    #
+    # We need to recreate these files for each test, as the compiler may
+    # overwrite some of them when testing with obscure command lines.
+    # This happens at least with the AIX C compiler.
+    : > sub/conftest.c
+    for i in 1 2 3 4 5 6; do
+      echo '#include "conftst'$i'.h"' >> sub/conftest.c
+      # Using ": > sub/conftst$i.h" creates only sub/conftst1.h with
+      # Solaris 10 /bin/sh.
+      echo '/* dummy */' > sub/conftst$i.h
+    done
+    echo "${am__include} ${am__quote}sub/conftest.Po${am__quote}" > confmf
+
+    # We check with '-c' and '-o' for the sake of the "dashmstdout"
+    # mode.  It turns out that the SunPro C++ compiler does not properly
+    # handle '-M -o', and we need to detect this.  Also, some Intel
+    # versions had trouble with output in subdirs.
+    am__obj=sub/conftest.${OBJEXT-o}
+    am__minus_obj="-o $am__obj"
+    case $depmode in
+    gcc)
+      # This depmode causes a compiler race in universal mode.
+      test "$am__universal" = false || continue
+      ;;
+    nosideeffect)
+      # After this tag, mechanisms are not by side-effect, so they'll
+      # only be used when explicitly requested.
+      if test "x$enable_dependency_tracking" = xyes; then
+	continue
+      else
+	break
+      fi
+      ;;
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
+      # This compiler won't grok '-c -o', but also, the minuso test has
+      # not run yet.  These depmodes are late enough in the game, and
+      # so weak that their functioning should not be impacted.
+      am__obj=conftest.${OBJEXT-o}
+      am__minus_obj=
+      ;;
+    none) break ;;
+    esac
+    if depmode=$depmode \
+       source=sub/conftest.c object=$am__obj \
+       depfile=sub/conftest.Po tmpdepfile=sub/conftest.TPo \
+       $SHELL ./depcomp $depcc -c $am__minus_obj sub/conftest.c \
+         >/dev/null 2>conftest.err &&
+       grep sub/conftst1.h sub/conftest.Po > /dev/null 2>&1 &&
+       grep sub/conftst6.h sub/conftest.Po > /dev/null 2>&1 &&
+       grep $am__obj sub/conftest.Po > /dev/null 2>&1 &&
+       ${MAKE-make} -s -f confmf > /dev/null 2>&1; then
+      # icc doesn't choke on unknown options, it will just issue warnings
+      # or remarks (even with -Werror).  So we grep stderr for any message
+      # that says an option was ignored or not supported.
+      # When given -MP, icc 7.0 and 7.1 complain thusly:
+      #   icc: Command line warning: ignoring option '-M'; no argument required
+      # The diagnosis changed in icc 8.0:
+      #   icc: Command line remark: option '-MP' not supported
+      if (grep 'ignoring option' conftest.err ||
+          grep 'not supported' conftest.err) >/dev/null 2>&1; then :; else
+        am_cv_$1_dependencies_compiler_type=$depmode
+        break
+      fi
+    fi
+  done
+
+  cd ..
+  rm -rf conftest.dir
+else
+  am_cv_$1_dependencies_compiler_type=none
+fi
+])
+AC_SUBST([$1DEPMODE], [depmode=$am_cv_$1_dependencies_compiler_type])
+AM_CONDITIONAL([am__fastdep$1], [
+  test "x$enable_dependency_tracking" != xno \
+  && test "$am_cv_$1_dependencies_compiler_type" = gcc3])
+])
+m4trace:/usr/share/aclocal-1.14/depend.m4:163: -1- AC_DEFUN([AM_SET_DEPDIR], [AC_REQUIRE([AM_SET_LEADING_DOT])dnl
+AC_SUBST([DEPDIR], ["${am__leading_dot}deps"])dnl
+])
+m4trace:/usr/share/aclocal-1.14/depend.m4:171: -1- AC_DEFUN([AM_DEP_TRACK], [AC_ARG_ENABLE([dependency-tracking], [dnl
+AS_HELP_STRING(
+  [--enable-dependency-tracking],
+  [do not reject slow dependency extractors])
+AS_HELP_STRING(
+  [--disable-dependency-tracking],
+  [speeds up one-time build])])
+if test "x$enable_dependency_tracking" != xno; then
+  am_depcomp="$ac_aux_dir/depcomp"
+  AMDEPBACKSLASH='\'
+  am__nodep='_no'
+fi
+AM_CONDITIONAL([AMDEP], [test "x$enable_dependency_tracking" != xno])
+AC_SUBST([AMDEPBACKSLASH])dnl
+_AM_SUBST_NOTMAKE([AMDEPBACKSLASH])dnl
+AC_SUBST([am__nodep])dnl
+_AM_SUBST_NOTMAKE([am__nodep])dnl
+])
+m4trace:/usr/share/aclocal-1.14/depout.m4:12: -1- AC_DEFUN([_AM_OUTPUT_DEPENDENCY_COMMANDS], [{
+  # Older Autoconf quotes --file arguments for eval, but not when files
+  # are listed without --file.  Let's play safe and only enable the eval
+  # if we detect the quoting.
+  case $CONFIG_FILES in
+  *\'*) eval set x "$CONFIG_FILES" ;;
+  *)   set x $CONFIG_FILES ;;
+  esac
+  shift
+  for mf
+  do
+    # Strip MF so we end up with the name of the file.
+    mf=`echo "$mf" | sed -e 's/:.*$//'`
+    # Check whether this is an Automake generated Makefile or not.
+    # We used to match only the files named 'Makefile.in', but
+    # some people rename them; so instead we look at the file content.
+    # Grep'ing the first line is not enough: some people post-process
+    # each Makefile.in and add a new line on top of each file to say so.
+    # Grep'ing the whole file is not good either: AIX grep has a line
+    # limit of 2048, but all sed's we know have understand at least 4000.
+    if sed -n 's,^#.*generated by automake.*,X,p' "$mf" | grep X >/dev/null 2>&1; then
+      dirpart=`AS_DIRNAME("$mf")`
+    else
+      continue
+    fi
+    # Extract the definition of DEPDIR, am__include, and am__quote
+    # from the Makefile without running 'make'.
+    DEPDIR=`sed -n 's/^DEPDIR = //p' < "$mf"`
+    test -z "$DEPDIR" && continue
+    am__include=`sed -n 's/^am__include = //p' < "$mf"`
+    test -z "$am__include" && continue
+    am__quote=`sed -n 's/^am__quote = //p' < "$mf"`
+    # Find all dependency output files, they are included files with
+    # $(DEPDIR) in their names.  We invoke sed twice because it is the
+    # simplest approach to changing $(DEPDIR) to its actual value in the
+    # expansion.
+    for file in `sed -n "
+      s/^$am__include $am__quote\(.*(DEPDIR).*\)$am__quote"'$/\1/p' <"$mf" | \
+	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g'`; do
+      # Make sure the directory exists.
+      test -f "$dirpart/$file" && continue
+      fdir=`AS_DIRNAME(["$file"])`
+      AS_MKDIR_P([$dirpart/$fdir])
+      # echo "creating $dirpart/$file"
+      echo '# dummy' > "$dirpart/$file"
+    done
+  done
+}
+])
+m4trace:/usr/share/aclocal-1.14/depout.m4:71: -1- AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS], [AC_CONFIG_COMMANDS([depfiles],
+     [test x"$AMDEP_TRUE" != x"" || _AM_OUTPUT_DEPENDENCY_COMMANDS],
+     [AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"])
+])
+m4trace:/usr/share/aclocal-1.14/init.m4:29: -1- AC_DEFUN([AM_INIT_AUTOMAKE], [AC_PREREQ([2.65])dnl
+dnl Autoconf wants to disallow AM_ names.  We explicitly allow
+dnl the ones we care about.
+m4_pattern_allow([^AM_[A-Z]+FLAGS$])dnl
+AC_REQUIRE([AM_SET_CURRENT_AUTOMAKE_VERSION])dnl
+AC_REQUIRE([AC_PROG_INSTALL])dnl
+if test "`cd $srcdir && pwd`" != "`pwd`"; then
+  # Use -I$(srcdir) only when $(srcdir) != ., so that make's output
+  # is not polluted with repeated "-I."
+  AC_SUBST([am__isrc], [' -I$(srcdir)'])_AM_SUBST_NOTMAKE([am__isrc])dnl
+  # test to see if srcdir already configured
+  if test -f $srcdir/config.status; then
+    AC_MSG_ERROR([source directory already configured; run "make distclean" there first])
+  fi
+fi
+
+# test whether we have cygpath
+if test -z "$CYGPATH_W"; then
+  if (cygpath --version) >/dev/null 2>/dev/null; then
+    CYGPATH_W='cygpath -w'
+  else
+    CYGPATH_W=echo
+  fi
+fi
+AC_SUBST([CYGPATH_W])
+
+# Define the identity of the package.
+dnl Distinguish between old-style and new-style calls.
+m4_ifval([$2],
+[AC_DIAGNOSE([obsolete],
+             [$0: two- and three-arguments forms are deprecated.])
+m4_ifval([$3], [_AM_SET_OPTION([no-define])])dnl
+ AC_SUBST([PACKAGE], [$1])dnl
+ AC_SUBST([VERSION], [$2])],
+[_AM_SET_OPTIONS([$1])dnl
+dnl Diagnose old-style AC_INIT with new-style AM_AUTOMAKE_INIT.
+m4_if(
+  m4_ifdef([AC_PACKAGE_NAME], [ok]):m4_ifdef([AC_PACKAGE_VERSION], [ok]),
+  [ok:ok],,
+  [m4_fatal([AC_INIT should be called with package and version arguments])])dnl
+ AC_SUBST([PACKAGE], ['AC_PACKAGE_TARNAME'])dnl
+ AC_SUBST([VERSION], ['AC_PACKAGE_VERSION'])])dnl
+
+_AM_IF_OPTION([no-define],,
+[AC_DEFINE_UNQUOTED([PACKAGE], ["$PACKAGE"], [Name of package])
+ AC_DEFINE_UNQUOTED([VERSION], ["$VERSION"], [Version number of package])])dnl
+
+# Some tools Automake needs.
+AC_REQUIRE([AM_SANITY_CHECK])dnl
+AC_REQUIRE([AC_ARG_PROGRAM])dnl
+AM_MISSING_PROG([ACLOCAL], [aclocal-${am__api_version}])
+AM_MISSING_PROG([AUTOCONF], [autoconf])
+AM_MISSING_PROG([AUTOMAKE], [automake-${am__api_version}])
+AM_MISSING_PROG([AUTOHEADER], [autoheader])
+AM_MISSING_PROG([MAKEINFO], [makeinfo])
+AC_REQUIRE([AM_PROG_INSTALL_SH])dnl
+AC_REQUIRE([AM_PROG_INSTALL_STRIP])dnl
+AC_REQUIRE([AC_PROG_MKDIR_P])dnl
+# For better backward compatibility.  To be removed once Automake 1.9.x
+# dies out for good.  For more background, see:
+# <http://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
+# <http://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
+AC_SUBST([mkdir_p], ['$(MKDIR_P)'])
+# We need awk for the "check" target.  The system "awk" is bad on
+# some platforms.
+AC_REQUIRE([AC_PROG_AWK])dnl
+AC_REQUIRE([AC_PROG_MAKE_SET])dnl
+AC_REQUIRE([AM_SET_LEADING_DOT])dnl
+_AM_IF_OPTION([tar-ustar], [_AM_PROG_TAR([ustar])],
+	      [_AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])],
+			     [_AM_PROG_TAR([v7])])])
+_AM_IF_OPTION([no-dependencies],,
+[AC_PROVIDE_IFELSE([AC_PROG_CC],
+		  [_AM_DEPENDENCIES([CC])],
+		  [m4_define([AC_PROG_CC],
+			     m4_defn([AC_PROG_CC])[_AM_DEPENDENCIES([CC])])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_CXX],
+		  [_AM_DEPENDENCIES([CXX])],
+		  [m4_define([AC_PROG_CXX],
+			     m4_defn([AC_PROG_CXX])[_AM_DEPENDENCIES([CXX])])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_OBJC],
+		  [_AM_DEPENDENCIES([OBJC])],
+		  [m4_define([AC_PROG_OBJC],
+			     m4_defn([AC_PROG_OBJC])[_AM_DEPENDENCIES([OBJC])])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_OBJCXX],
+		  [_AM_DEPENDENCIES([OBJCXX])],
+		  [m4_define([AC_PROG_OBJCXX],
+			     m4_defn([AC_PROG_OBJCXX])[_AM_DEPENDENCIES([OBJCXX])])])dnl
+])
+AC_REQUIRE([AM_SILENT_RULES])dnl
+dnl The testsuite driver may need to know about EXEEXT, so add the
+dnl 'am__EXEEXT' conditional if _AM_COMPILER_EXEEXT was seen.  This
+dnl macro is hooked onto _AC_COMPILER_EXEEXT early, see below.
+AC_CONFIG_COMMANDS_PRE(dnl
+[m4_provide_if([_AM_COMPILER_EXEEXT],
+  [AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])])])dnl
+
+# POSIX will say in a future version that running "rm -f" with no argument
+# is OK; and we want to be able to make that assumption in our Makefile
+# recipes.  So use an aggressive probe to check that the usage we want is
+# actually supported "in the wild" to an acceptable degree.
+# See automake bug#10828.
+# To make any issue more visible, cause the running configure to be aborted
+# by default if the 'rm' program in use doesn't match our expectations; the
+# user can still override this though.
+if rm -f && rm -fr && rm -rf; then : OK; else
+  cat >&2 <<'END'
+Oops!
+
+Your 'rm' program seems unable to run without file operands specified
+on the command line, even when the '-f' option is present.  This is contrary
+to the behaviour of most rm programs out there, and not conforming with
+the upcoming POSIX standard: <http://austingroupbugs.net/view.php?id=542>
+
+Please tell bug-automake@gnu.org about your system, including the value
+of your $PATH and any error possibly output before this message.  This
+can help us improve future automake versions.
+
+END
+  if test x"$ACCEPT_INFERIOR_RM_PROGRAM" = x"yes"; then
+    echo 'Configuration will proceed anyway, since you have set the' >&2
+    echo 'ACCEPT_INFERIOR_RM_PROGRAM variable to "yes"' >&2
+    echo >&2
+  else
+    cat >&2 <<'END'
+Aborting the configuration process, to ensure you take notice of the issue.
+
+You can download and install GNU coreutils to get an 'rm' implementation
+that behaves properly: <http://www.gnu.org/software/coreutils/>.
+
+If you want to complete the configuration process using your problematic
+'rm' anyway, export the environment variable ACCEPT_INFERIOR_RM_PROGRAM
+to "yes", and re-run configure.
+
+END
+    AC_MSG_ERROR([Your 'rm' program is bad, sorry.])
+  fi
+fi])
+m4trace:/usr/share/aclocal-1.14/init.m4:182: -1- AC_DEFUN([_AC_AM_CONFIG_HEADER_HOOK], [# Compute $1's index in $config_headers.
+_am_arg=$1
+_am_stamp_count=1
+for _am_header in $config_headers :; do
+  case $_am_header in
+    $_am_arg | $_am_arg:* )
+      break ;;
+    * )
+      _am_stamp_count=`expr $_am_stamp_count + 1` ;;
+  esac
+done
+echo "timestamp for $_am_arg" >`AS_DIRNAME(["$_am_arg"])`/stamp-h[]$_am_stamp_count])
+m4trace:/usr/share/aclocal-1.14/install-sh.m4:11: -1- AC_DEFUN([AM_PROG_INSTALL_SH], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
+if test x"${install_sh}" != xset; then
+  case $am_aux_dir in
+  *\ * | *\	*)
+    install_sh="\${SHELL} '$am_aux_dir/install-sh'" ;;
+  *)
+    install_sh="\${SHELL} $am_aux_dir/install-sh"
+  esac
+fi
+AC_SUBST([install_sh])])
+m4trace:/usr/share/aclocal-1.14/lead-dot.m4:10: -1- AC_DEFUN([AM_SET_LEADING_DOT], [rm -rf .tst 2>/dev/null
+mkdir .tst 2>/dev/null
+if test -d .tst; then
+  am__leading_dot=.
+else
+  am__leading_dot=_
+fi
+rmdir .tst 2>/dev/null
+AC_SUBST([am__leading_dot])])
+m4trace:/usr/share/aclocal-1.14/make.m4:12: -1- AC_DEFUN([AM_MAKE_INCLUDE], [am_make=${MAKE-make}
+cat > confinc << 'END'
+am__doit:
+	@echo this is the am__doit target
+.PHONY: am__doit
+END
+# If we don't find an include directive, just comment out the code.
+AC_MSG_CHECKING([for style of include used by $am_make])
+am__include="#"
+am__quote=
+_am_result=none
+# First try GNU make style include.
+echo "include confinc" > confmf
+# Ignore all kinds of additional output from 'make'.
+case `$am_make -s -f confmf 2> /dev/null` in #(
+*the\ am__doit\ target*)
+  am__include=include
+  am__quote=
+  _am_result=GNU
+  ;;
+esac
+# Now try BSD make style include.
+if test "$am__include" = "#"; then
+   echo '.include "confinc"' > confmf
+   case `$am_make -s -f confmf 2> /dev/null` in #(
+   *the\ am__doit\ target*)
+     am__include=.include
+     am__quote="\""
+     _am_result=BSD
+     ;;
+   esac
+fi
+AC_SUBST([am__include])
+AC_SUBST([am__quote])
+AC_MSG_RESULT([$_am_result])
+rm -f confinc confmf
+])
+m4trace:/usr/share/aclocal-1.14/missing.m4:11: -1- AC_DEFUN([AM_MISSING_PROG], [AC_REQUIRE([AM_MISSING_HAS_RUN])
+$1=${$1-"${am_missing_run}$2"}
+AC_SUBST($1)])
+m4trace:/usr/share/aclocal-1.14/missing.m4:20: -1- AC_DEFUN([AM_MISSING_HAS_RUN], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
+AC_REQUIRE_AUX_FILE([missing])dnl
+if test x"${MISSING+set}" != xset; then
+  case $am_aux_dir in
+  *\ * | *\	*)
+    MISSING="\${SHELL} \"$am_aux_dir/missing\"" ;;
+  *)
+    MISSING="\${SHELL} $am_aux_dir/missing" ;;
+  esac
+fi
+# Use eval to expand $SHELL
+if eval "$MISSING --is-lightweight"; then
+  am_missing_run="$MISSING "
+else
+  am_missing_run=
+  AC_MSG_WARN(['missing' script is too old or missing])
+fi
+])
+m4trace:/usr/share/aclocal-1.14/options.m4:11: -1- AC_DEFUN([_AM_MANGLE_OPTION], [[_AM_OPTION_]m4_bpatsubst($1, [[^a-zA-Z0-9_]], [_])])
+m4trace:/usr/share/aclocal-1.14/options.m4:17: -1- AC_DEFUN([_AM_SET_OPTION], [m4_define(_AM_MANGLE_OPTION([$1]), [1])])
+m4trace:/usr/share/aclocal-1.14/options.m4:23: -1- AC_DEFUN([_AM_SET_OPTIONS], [m4_foreach_w([_AM_Option], [$1], [_AM_SET_OPTION(_AM_Option)])])
+m4trace:/usr/share/aclocal-1.14/options.m4:29: -1- AC_DEFUN([_AM_IF_OPTION], [m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
+m4trace:/usr/share/aclocal-1.14/prog-cc-c-o.m4:12: -1- AC_DEFUN([_AM_PROG_CC_C_O], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
+AC_REQUIRE_AUX_FILE([compile])dnl
+AC_LANG_PUSH([C])dnl
+AC_CACHE_CHECK(
+  [whether $CC understands -c and -o together],
+  [am_cv_prog_cc_c_o],
+  [AC_LANG_CONFTEST([AC_LANG_PROGRAM([])])
+  # Make sure it works both with $CC and with simple cc.
+  # Following AC_PROG_CC_C_O, we do the test twice because some
+  # compilers refuse to overwrite an existing .o file with -o,
+  # though they will create one.
+  am_cv_prog_cc_c_o=yes
+  for am_i in 1 2; do
+    if AM_RUN_LOG([$CC -c conftest.$ac_ext -o conftest2.$ac_objext]) \
+         && test -f conftest2.$ac_objext; then
+      : OK
+    else
+      am_cv_prog_cc_c_o=no
+      break
+    fi
+  done
+  rm -f core conftest*
+  unset am_i])
+if test "$am_cv_prog_cc_c_o" != yes; then
+   # Losing compiler, so override with the script.
+   # FIXME: It is wrong to rewrite CC.
+   # But if we don't then we get into trouble of one sort or another.
+   # A longer-term fix would be to have automake use am__CC in this case,
+   # and then we could set am__CC="\$(top_srcdir)/compile \$(CC)"
+   CC="$am_aux_dir/compile $CC"
+fi
+AC_LANG_POP([C])])
+m4trace:/usr/share/aclocal-1.14/prog-cc-c-o.m4:47: -1- AC_DEFUN_ONCE([AM_PROG_CC_C_O], [AC_REQUIRE([AC_PROG_CC])])
+m4trace:/usr/share/aclocal-1.14/runlog.m4:12: -1- AC_DEFUN([AM_RUN_LOG], [{ echo "$as_me:$LINENO: $1" >&AS_MESSAGE_LOG_FD
+   ($1) >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&AS_MESSAGE_LOG_FD
+   (exit $ac_status); }])
+m4trace:/usr/share/aclocal-1.14/sanity.m4:11: -1- AC_DEFUN([AM_SANITY_CHECK], [AC_MSG_CHECKING([whether build environment is sane])
+# Reject unsafe characters in $srcdir or the absolute working directory
+# name.  Accept space and tab only in the latter.
+am_lf='
+'
+case `pwd` in
+  *[[\\\"\#\$\&\'\`$am_lf]]*)
+    AC_MSG_ERROR([unsafe absolute working directory name]);;
+esac
+case $srcdir in
+  *[[\\\"\#\$\&\'\`$am_lf\ \	]]*)
+    AC_MSG_ERROR([unsafe srcdir value: '$srcdir']);;
+esac
+
+# Do 'set' in a subshell so we don't clobber the current shell's
+# arguments.  Must try -L first in case configure is actually a
+# symlink; some systems play weird games with the mod time of symlinks
+# (eg FreeBSD returns the mod time of the symlink's containing
+# directory).
+if (
+   am_has_slept=no
+   for am_try in 1 2; do
+     echo "timestamp, slept: $am_has_slept" > conftest.file
+     set X `ls -Lt "$srcdir/configure" conftest.file 2> /dev/null`
+     if test "$[*]" = "X"; then
+	# -L didn't work.
+	set X `ls -t "$srcdir/configure" conftest.file`
+     fi
+     if test "$[*]" != "X $srcdir/configure conftest.file" \
+	&& test "$[*]" != "X conftest.file $srcdir/configure"; then
+
+	# If neither matched, then we have a broken ls.  This can happen
+	# if, for instance, CONFIG_SHELL is bash and it inherits a
+	# broken ls alias from the environment.  This has actually
+	# happened.  Such a system could not be considered "sane".
+	AC_MSG_ERROR([ls -t appears to fail.  Make sure there is not a broken
+  alias in your environment])
+     fi
+     if test "$[2]" = conftest.file || test $am_try -eq 2; then
+       break
+     fi
+     # Just in case.
+     sleep 1
+     am_has_slept=yes
+   done
+   test "$[2]" = conftest.file
+   )
+then
+   # Ok.
+   :
+else
+   AC_MSG_ERROR([newly created file is older than distributed files!
+Check your system clock])
+fi
+AC_MSG_RESULT([yes])
+# If we didn't sleep, we still need to ensure time stamps of config.status and
+# generated files are strictly newer.
+am_sleep_pid=
+if grep 'slept: no' conftest.file >/dev/null 2>&1; then
+  ( sleep 1 ) &
+  am_sleep_pid=$!
+fi
+AC_CONFIG_COMMANDS_PRE(
+  [AC_MSG_CHECKING([that generated files are newer than configure])
+   if test -n "$am_sleep_pid"; then
+     # Hide warnings about reused PIDs.
+     wait $am_sleep_pid 2>/dev/null
+   fi
+   AC_MSG_RESULT([done])])
+rm -f conftest.file
+])
+m4trace:/usr/share/aclocal-1.14/silent.m4:12: -1- AC_DEFUN([AM_SILENT_RULES], [AC_ARG_ENABLE([silent-rules], [dnl
+AS_HELP_STRING(
+  [--enable-silent-rules],
+  [less verbose build output (undo: "make V=1")])
+AS_HELP_STRING(
+  [--disable-silent-rules],
+  [verbose build output (undo: "make V=0")])dnl
+])
+case $enable_silent_rules in @%:@ (((
+  yes) AM_DEFAULT_VERBOSITY=0;;
+   no) AM_DEFAULT_VERBOSITY=1;;
+    *) AM_DEFAULT_VERBOSITY=m4_if([$1], [yes], [0], [1]);;
+esac
+dnl
+dnl A few 'make' implementations (e.g., NonStop OS and NextStep)
+dnl do not support nested variable expansions.
+dnl See automake bug#9928 and bug#10237.
+am_make=${MAKE-make}
+AC_CACHE_CHECK([whether $am_make supports nested variables],
+   [am_cv_make_support_nested_variables],
+   [if AS_ECHO([['TRUE=$(BAR$(V))
+BAR0=false
+BAR1=true
+V=1
+am__doit:
+	@$(TRUE)
+.PHONY: am__doit']]) | $am_make -f - >/dev/null 2>&1; then
+  am_cv_make_support_nested_variables=yes
+else
+  am_cv_make_support_nested_variables=no
+fi])
+if test $am_cv_make_support_nested_variables = yes; then
+  dnl Using '$V' instead of '$(V)' breaks IRIX make.
+  AM_V='$(V)'
+  AM_DEFAULT_V='$(AM_DEFAULT_VERBOSITY)'
+else
+  AM_V=$AM_DEFAULT_VERBOSITY
+  AM_DEFAULT_V=$AM_DEFAULT_VERBOSITY
+fi
+AC_SUBST([AM_V])dnl
+AM_SUBST_NOTMAKE([AM_V])dnl
+AC_SUBST([AM_DEFAULT_V])dnl
+AM_SUBST_NOTMAKE([AM_DEFAULT_V])dnl
+AC_SUBST([AM_DEFAULT_VERBOSITY])dnl
+AM_BACKSLASH='\'
+AC_SUBST([AM_BACKSLASH])dnl
+_AM_SUBST_NOTMAKE([AM_BACKSLASH])dnl
+])
+m4trace:/usr/share/aclocal-1.14/strip.m4:17: -1- AC_DEFUN([AM_PROG_INSTALL_STRIP], [AC_REQUIRE([AM_PROG_INSTALL_SH])dnl
+# Installed binaries are usually stripped using 'strip' when the user
+# run "make install-strip".  However 'strip' might not be the right
+# tool to use in cross-compilation environments, therefore Automake
+# will honor the 'STRIP' environment variable to overrule this program.
+dnl Don't test for $cross_compiling = yes, because it might be 'maybe'.
+if test "$cross_compiling" != no; then
+  AC_CHECK_TOOL([STRIP], [strip], :)
+fi
+INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
+AC_SUBST([INSTALL_STRIP_PROGRAM])])
+m4trace:/usr/share/aclocal-1.14/substnot.m4:12: -1- AC_DEFUN([_AM_SUBST_NOTMAKE])
+m4trace:/usr/share/aclocal-1.14/substnot.m4:17: -1- AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
+m4trace:/usr/share/aclocal-1.14/tar.m4:23: -1- AC_DEFUN([_AM_PROG_TAR], [# Always define AMTAR for backward compatibility.  Yes, it's still used
+# in the wild :-(  We should find a proper way to deprecate it ...
+AC_SUBST([AMTAR], ['$${TAR-tar}'])
+
+# We'll loop over all known methods to create a tar archive until one works.
+_am_tools='gnutar m4_if([$1], [ustar], [plaintar]) pax cpio none'
+
+m4_if([$1], [v7],
+  [am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'],
+
+  [m4_case([$1],
+    [ustar],
+     [# The POSIX 1988 'ustar' format is defined with fixed-size fields.
+      # There is notably a 21 bits limit for the UID and the GID.  In fact,
+      # the 'pax' utility can hang on bigger UID/GID (see automake bug#8343
+      # and bug#13588).
+      am_max_uid=2097151 # 2^21 - 1
+      am_max_gid=$am_max_uid
+      # The $UID and $GID variables are not portable, so we need to resort
+      # to the POSIX-mandated id(1) utility.  Errors in the 'id' calls
+      # below are definitely unexpected, so allow the users to see them
+      # (that is, avoid stderr redirection).
+      am_uid=`id -u || echo unknown`
+      am_gid=`id -g || echo unknown`
+      AC_MSG_CHECKING([whether UID '$am_uid' is supported by ustar format])
+      if test $am_uid -le $am_max_uid; then
+         AC_MSG_RESULT([yes])
+      else
+         AC_MSG_RESULT([no])
+         _am_tools=none
+      fi
+      AC_MSG_CHECKING([whether GID '$am_gid' is supported by ustar format])
+      if test $am_gid -le $am_max_gid; then
+         AC_MSG_RESULT([yes])
+      else
+        AC_MSG_RESULT([no])
+        _am_tools=none
+      fi],
+
+  [pax],
+    [],
+
+  [m4_fatal([Unknown tar format])])
+
+  AC_MSG_CHECKING([how to create a $1 tar archive])
+
+  # Go ahead even if we have the value already cached.  We do so because we
+  # need to set the values for the 'am__tar' and 'am__untar' variables.
+  _am_tools=${am_cv_prog_tar_$1-$_am_tools}
+
+  for _am_tool in $_am_tools; do
+    case $_am_tool in
+    gnutar)
+      for _am_tar in tar gnutar gtar; do
+        AM_RUN_LOG([$_am_tar --version]) && break
+      done
+      am__tar="$_am_tar --format=m4_if([$1], [pax], [posix], [$1]) -chf - "'"$$tardir"'
+      am__tar_="$_am_tar --format=m4_if([$1], [pax], [posix], [$1]) -chf - "'"$tardir"'
+      am__untar="$_am_tar -xf -"
+      ;;
+    plaintar)
+      # Must skip GNU tar: if it does not support --format= it doesn't create
+      # ustar tarball either.
+      (tar --version) >/dev/null 2>&1 && continue
+      am__tar='tar chf - "$$tardir"'
+      am__tar_='tar chf - "$tardir"'
+      am__untar='tar xf -'
+      ;;
+    pax)
+      am__tar='pax -L -x $1 -w "$$tardir"'
+      am__tar_='pax -L -x $1 -w "$tardir"'
+      am__untar='pax -r'
+      ;;
+    cpio)
+      am__tar='find "$$tardir" -print | cpio -o -H $1 -L'
+      am__tar_='find "$tardir" -print | cpio -o -H $1 -L'
+      am__untar='cpio -i -H $1 -d'
+      ;;
+    none)
+      am__tar=false
+      am__tar_=false
+      am__untar=false
+      ;;
+    esac
+
+    # If the value was cached, stop now.  We just wanted to have am__tar
+    # and am__untar set.
+    test -n "${am_cv_prog_tar_$1}" && break
+
+    # tar/untar a dummy directory, and stop if the command works.
+    rm -rf conftest.dir
+    mkdir conftest.dir
+    echo GrepMe > conftest.dir/file
+    AM_RUN_LOG([tardir=conftest.dir && eval $am__tar_ >conftest.tar])
+    rm -rf conftest.dir
+    if test -s conftest.tar; then
+      AM_RUN_LOG([$am__untar <conftest.tar])
+      AM_RUN_LOG([cat conftest.dir/file])
+      grep GrepMe conftest.dir/file >/dev/null 2>&1 && break
+    fi
+  done
+  rm -rf conftest.dir
+
+  AC_CACHE_VAL([am_cv_prog_tar_$1], [am_cv_prog_tar_$1=$_am_tool])
+  AC_MSG_RESULT([$am_cv_prog_tar_$1])])
+
+AC_SUBST([am__tar])
+AC_SUBST([am__untar])
+])
+m4trace:m4/absolute-header.m4:22: -1- AC_DEFUN([gl_ABSOLUTE_HEADER], [AC_REQUIRE([AC_CANONICAL_HOST])
+AC_LANG_PREPROC_REQUIRE()dnl
+dnl FIXME: gl_absolute_header and ac_header_exists must be used unquoted
+dnl until we can assume autoconf 2.64 or newer.
+m4_foreach_w([gl_HEADER_NAME], [$1],
+  [AS_VAR_PUSHDEF([gl_absolute_header],
+                  [gl_cv_absolute_]m4_defn([gl_HEADER_NAME]))dnl
+  AC_CACHE_CHECK([absolute name of <]m4_defn([gl_HEADER_NAME])[>],
+    m4_defn([gl_absolute_header]),
+    [AS_VAR_PUSHDEF([ac_header_exists],
+                    [ac_cv_header_]m4_defn([gl_HEADER_NAME]))dnl
+    AC_CHECK_HEADERS_ONCE(m4_defn([gl_HEADER_NAME]))dnl
+    if test AS_VAR_GET(ac_header_exists) = yes; then
+      gl_ABSOLUTE_HEADER_ONE(m4_defn([gl_HEADER_NAME]))
+    fi
+    AS_VAR_POPDEF([ac_header_exists])dnl
+    ])dnl
+  AC_DEFINE_UNQUOTED(AS_TR_CPP([ABSOLUTE_]m4_defn([gl_HEADER_NAME])),
+                     ["AS_VAR_GET(gl_absolute_header)"],
+                     [Define this to an absolute name of <]m4_defn([gl_HEADER_NAME])[>.])
+  AS_VAR_POPDEF([gl_absolute_header])dnl
+])dnl
+])
+m4trace:m4/absolute-header.m4:54: -1- AC_DEFUN([gl_ABSOLUTE_HEADER_ONE], [
+  AC_REQUIRE([AC_CANONICAL_HOST])
+  AC_LANG_CONFTEST([AC_LANG_SOURCE([[#include <]]m4_dquote([$1])[[>]])])
+  dnl AIX "xlc -E" and "cc -E" omit #line directives for header files
+  dnl that contain only a #include of other header files and no
+  dnl non-comment tokens of their own. This leads to a failure to
+  dnl detect the absolute name of <dirent.h>, <signal.h>, <poll.h>
+  dnl and others. The workaround is to force preservation of comments
+  dnl through option -C. This ensures all necessary #line directives
+  dnl are present. GCC supports option -C as well.
+  case "$host_os" in
+    aix*) gl_absname_cpp="$ac_cpp -C" ;;
+    *)    gl_absname_cpp="$ac_cpp" ;;
+  esac
+changequote(,)
+  case "$host_os" in
+    mingw*)
+      dnl For the sake of native Windows compilers (excluding gcc),
+      dnl treat backslash as a directory separator, like /.
+      dnl Actually, these compilers use a double-backslash as
+      dnl directory separator, inside the
+      dnl   # line "filename"
+      dnl directives.
+      gl_dirsep_regex='[/\\]'
+      ;;
+    *)
+      gl_dirsep_regex='\/'
+      ;;
+  esac
+  dnl A sed expression that turns a string into a basic regular
+  dnl expression, for use within "/.../".
+  gl_make_literal_regex_sed='s,[]$^\\.*/[],\\&,g'
+  gl_header_literal_regex=`echo '$1' \
+                           | sed -e "$gl_make_literal_regex_sed"`
+  gl_absolute_header_sed="/${gl_dirsep_regex}${gl_header_literal_regex}/"'{
+      s/.*"\(.*'"${gl_dirsep_regex}${gl_header_literal_regex}"'\)".*/\1/
+      s|^/[^/]|//&|
+      p
+      q
+    }'
+changequote([,])
+  dnl eval is necessary to expand gl_absname_cpp.
+  dnl Ultrix and Pyramid sh refuse to redirect output of eval,
+  dnl so use subshell.
+  AS_VAR_SET([gl_cv_absolute_]AS_TR_SH([[$1]]),
+[`(eval "$gl_absname_cpp conftest.$ac_ext") 2>&AS_MESSAGE_LOG_FD |
+  sed -n "$gl_absolute_header_sed"`])
+])
+m4trace:m4/ax_check_openssl.m4:37: -1- AU_DEFUN([CHECK_SSL], [m4_if($#, 0, [AX_CHECK_OPENSSL], [AX_CHECK_OPENSSL($@)])])
+m4trace:m4/ax_check_openssl.m4:37: -1- AC_DEFUN([CHECK_SSL], [AC_DIAGNOSE([obsolete], [The macro `CHECK_SSL' is obsolete.
+You should run autoupdate.])dnl
+m4_if($#, 0, [AX_CHECK_OPENSSL], [AX_CHECK_OPENSSL($@)])])
+m4trace:m4/ax_check_openssl.m4:38: -1- AC_DEFUN([AX_CHECK_OPENSSL], [
+    found=false
+    AC_ARG_WITH([openssl],
+        [AS_HELP_STRING([--with-openssl=DIR],
+            [root of the OpenSSL directory])],
+        [
+            case "$withval" in
+            "" | y | ye | yes | n | no)
+            AC_MSG_ERROR([Invalid --with-openssl value])
+              ;;
+            *) ssldirs="$withval"
+              ;;
+            esac
+        ], [
+            # if pkg-config is installed and openssl has installed a .pc file,
+            # then use that information and don't search ssldirs
+            AC_PATH_PROG([PKG_CONFIG], [pkg-config])
+            if test x"$PKG_CONFIG" != x""; then
+                SSL_LDFLAGS=`$PKG_CONFIG openssl --libs-only-L 2>/dev/null`
+                if test $? = 0; then
+                    SSL_LIBS=`$PKG_CONFIG openssl --libs-only-l 2>/dev/null`
+                    SSL_INCLUDES=`$PKG_CONFIG openssl --cflags-only-I 2>/dev/null`
+                    found=true
+                fi
+            fi
+
+            # no such luck; use some default ssldirs
+            if ! $found; then
+                ssldirs="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr"
+            fi
+        ]
+        )
+
+
+    # note that we #include <openssl/foo.h>, so the OpenSSL headers have to be in
+    # an 'openssl' subdirectory
+
+    if ! $found; then
+        SSL_INCLUDES=
+        for ssldir in $ssldirs; do
+            AC_MSG_CHECKING([for openssl/ssl.h in $ssldir])
+            if test -f "$ssldir/include/openssl/ssl.h"; then
+                SSL_INCLUDES="-I$ssldir/include"
+                SSL_LDFLAGS="-L$ssldir/lib"
+                if test "$WIN32" = "yes"; then
+                    SSL_LIBS="-lssleay32 -llibeay32"
+                else
+                    SSL_LIBS="-lssl -lcrypto"
+                fi
+                found=true
+                AC_MSG_RESULT([yes])
+                break
+            else
+                AC_MSG_RESULT([no])
+            fi
+        done
+
+        # if the file wasn't found, well, go ahead and try the link anyway -- maybe
+        # it will just work!
+    fi
+
+    # try the preprocessor and linker with our new flags,
+    # being careful not to pollute the global LIBS, LDFLAGS, and CPPFLAGS
+
+    AC_MSG_CHECKING([whether compiling and linking against OpenSSL works])
+    echo "Trying link with SSL_LDFLAGS=$SSL_LDFLAGS;" \
+        "SSL_LIBS=$SSL_LIBS; SSL_INCLUDES=$SSL_INCLUDES" >&AS_MESSAGE_LOG_FD
+
+    save_LIBS="$LIBS"
+    save_LDFLAGS="$LDFLAGS"
+    save_CPPFLAGS="$CPPFLAGS"
+    LDFLAGS="$LDFLAGS $SSL_LDFLAGS"
+    LIBS="$SSL_LIBS $LIBS"
+    CPPFLAGS="$SSL_INCLUDES $CPPFLAGS"
+    AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM([#include <openssl/ssl.h>],
+            [SSL_CTX *ctx=NULL;SSL_new(ctx)])],
+        [
+            AC_MSG_RESULT([yes])
+            $1
+        ], [
+            AC_MSG_RESULT([no])
+            $2
+        ])
+    CPPFLAGS="$save_CPPFLAGS"
+    LDFLAGS="$save_LDFLAGS"
+    LIBS="$save_LIBS"
+
+    AC_SUBST([SSL_INCLUDES])
+    AC_SUBST([SSL_LIBS])
+    AC_SUBST([SSL_LDFLAGS])
+])
+m4trace:m4/ax_func_posix_memalign.m4:27: -1- AC_DEFUN([AX_FUNC_POSIX_MEMALIGN], [AC_CACHE_CHECK([for working posix_memalign],
+  [ax_cv_func_posix_memalign_works],
+  [AC_TRY_RUN([
+#include <stdlib.h>
+
+int
+main ()
+{
+  void *buffer;
+
+  /* Some versions of glibc incorrectly perform the alignment check on
+   * the size word. */
+  exit (posix_memalign (&buffer, sizeof(void *), 123) != 0);
+}
+    ],
+    [ax_cv_func_posix_memalign_works=yes],
+    [ax_cv_func_posix_memalign_works=no],
+    [ax_cv_func_posix_memalign_works=no])])
+if test "$ax_cv_func_posix_memalign_works" = "yes" ; then
+  AC_DEFINE([HAVE_POSIX_MEMALIGN], [1],
+    [Define to 1 if `posix_memalign' works.])
+fi
+])
+m4trace:m4/include_next.m4:35: -1- AC_DEFUN([gl_INCLUDE_NEXT], [
+  AC_LANG_PREPROC_REQUIRE()
+  AC_CACHE_CHECK([whether the preprocessor supports include_next],
+    [gl_cv_have_include_next],
+    [rm -rf conftestd1a conftestd1b conftestd2
+     mkdir conftestd1a conftestd1b conftestd2
+     dnl IBM C 9.0, 10.1 (original versions, prior to the 2009-01 updates) on
+     dnl AIX 6.1 support include_next when used as first preprocessor directive
+     dnl in a file, but not when preceded by another include directive. Check
+     dnl for this bug by including <stdio.h>.
+     dnl Additionally, with this same compiler, include_next is a no-op when
+     dnl used in a header file that was included by specifying its absolute
+     dnl file name. Despite these two bugs, include_next is used in the
+     dnl compiler's <math.h>. By virtue of the second bug, we need to use
+     dnl include_next as well in this case.
+     cat <<EOF > conftestd1a/conftest.h
+#define DEFINED_IN_CONFTESTD1
+#include_next <conftest.h>
+#ifdef DEFINED_IN_CONFTESTD2
+int foo;
+#else
+#error "include_next doesn't work"
+#endif
+EOF
+     cat <<EOF > conftestd1b/conftest.h
+#define DEFINED_IN_CONFTESTD1
+#include <stdio.h>
+#include_next <conftest.h>
+#ifdef DEFINED_IN_CONFTESTD2
+int foo;
+#else
+#error "include_next doesn't work"
+#endif
+EOF
+     cat <<EOF > conftestd2/conftest.h
+#ifndef DEFINED_IN_CONFTESTD1
+#error "include_next test doesn't work"
+#endif
+#define DEFINED_IN_CONFTESTD2
+EOF
+     gl_save_CPPFLAGS="$CPPFLAGS"
+     CPPFLAGS="$gl_save_CPPFLAGS -Iconftestd1b -Iconftestd2"
+dnl We intentionally avoid using AC_LANG_SOURCE here.
+     AC_COMPILE_IFELSE([AC_LANG_DEFINES_PROVIDED[#include <conftest.h>]],
+       [gl_cv_have_include_next=yes],
+       [CPPFLAGS="$gl_save_CPPFLAGS -Iconftestd1a -Iconftestd2"
+        AC_COMPILE_IFELSE([AC_LANG_DEFINES_PROVIDED[#include <conftest.h>]],
+          [gl_cv_have_include_next=buggy],
+          [gl_cv_have_include_next=no])
+       ])
+     CPPFLAGS="$gl_save_CPPFLAGS"
+     rm -rf conftestd1a conftestd1b conftestd2
+    ])
+  PRAGMA_SYSTEM_HEADER=
+  if test $gl_cv_have_include_next = yes; then
+    INCLUDE_NEXT=include_next
+    INCLUDE_NEXT_AS_FIRST_DIRECTIVE=include_next
+    if test -n "$GCC"; then
+      PRAGMA_SYSTEM_HEADER='#pragma GCC system_header'
+    fi
+  else
+    if test $gl_cv_have_include_next = buggy; then
+      INCLUDE_NEXT=include
+      INCLUDE_NEXT_AS_FIRST_DIRECTIVE=include_next
+    else
+      INCLUDE_NEXT=include
+      INCLUDE_NEXT_AS_FIRST_DIRECTIVE=include
+    fi
+  fi
+  AC_SUBST([INCLUDE_NEXT])
+  AC_SUBST([INCLUDE_NEXT_AS_FIRST_DIRECTIVE])
+  AC_SUBST([PRAGMA_SYSTEM_HEADER])
+  AC_CACHE_CHECK([whether system header files limit the line length],
+    [gl_cv_pragma_columns],
+    [dnl HP NonStop systems, which define __TANDEM, have this misfeature.
+     AC_EGREP_CPP([choke me],
+       [
+#ifdef __TANDEM
+choke me
+#endif
+       ],
+       [gl_cv_pragma_columns=yes],
+       [gl_cv_pragma_columns=no])
+    ])
+  if test $gl_cv_pragma_columns = yes; then
+    PRAGMA_COLUMNS="#pragma COLUMNS 10000"
+  else
+    PRAGMA_COLUMNS=
+  fi
+  AC_SUBST([PRAGMA_COLUMNS])
+])
+m4trace:m4/include_next.m4:153: -1- AC_DEFUN([gl_CHECK_NEXT_HEADERS], [
+  gl_NEXT_HEADERS_INTERNAL([$1], [check])
+])
+m4trace:m4/include_next.m4:163: -1- AC_DEFUN([gl_NEXT_HEADERS], [
+  gl_NEXT_HEADERS_INTERNAL([$1], [assume])
+])
+m4trace:m4/include_next.m4:169: -1- AC_DEFUN([gl_NEXT_HEADERS_INTERNAL], [
+  AC_REQUIRE([gl_INCLUDE_NEXT])
+  AC_REQUIRE([AC_CANONICAL_HOST])
+
+  m4_if([$2], [check],
+    [AC_CHECK_HEADERS_ONCE([$1])
+    ])
+
+dnl FIXME: gl_next_header and gl_header_exists must be used unquoted
+dnl until we can assume autoconf 2.64 or newer.
+  m4_foreach_w([gl_HEADER_NAME], [$1],
+    [AS_VAR_PUSHDEF([gl_next_header],
+                    [gl_cv_next_]m4_defn([gl_HEADER_NAME]))
+     if test $gl_cv_have_include_next = yes; then
+       AS_VAR_SET(gl_next_header, ['<'gl_HEADER_NAME'>'])
+     else
+       AC_CACHE_CHECK(
+         [absolute name of <]m4_defn([gl_HEADER_NAME])[>],
+         m4_defn([gl_next_header]),
+         [m4_if([$2], [check],
+            [AS_VAR_PUSHDEF([gl_header_exists],
+                            [ac_cv_header_]m4_defn([gl_HEADER_NAME]))
+             if test AS_VAR_GET(gl_header_exists) = yes; then
+             AS_VAR_POPDEF([gl_header_exists])
+            ])
+           gl_ABSOLUTE_HEADER_ONE(gl_HEADER_NAME)
+           AS_VAR_COPY([gl_header], [gl_cv_absolute_]AS_TR_SH(gl_HEADER_NAME))
+           AS_VAR_SET(gl_next_header, ['"'$gl_header'"'])
+          m4_if([$2], [check],
+            [else
+               AS_VAR_SET(gl_next_header, ['<'gl_HEADER_NAME'>'])
+             fi
+            ])
+         ])
+     fi
+     AC_SUBST(
+       AS_TR_CPP([NEXT_]m4_defn([gl_HEADER_NAME])),
+       [AS_VAR_GET(gl_next_header)])
+     if test $gl_cv_have_include_next = yes || test $gl_cv_have_include_next = buggy; then
+       # INCLUDE_NEXT_AS_FIRST_DIRECTIVE='include_next'
+       gl_next_as_first_directive='<'gl_HEADER_NAME'>'
+     else
+       # INCLUDE_NEXT_AS_FIRST_DIRECTIVE='include'
+       gl_next_as_first_directive=AS_VAR_GET(gl_next_header)
+     fi
+     AC_SUBST(
+       AS_TR_CPP([NEXT_AS_FIRST_DIRECTIVE_]m4_defn([gl_HEADER_NAME])),
+       [$gl_next_as_first_directive])
+     AS_VAR_POPDEF([gl_next_header])])
+])
+m4trace:m4/openvswitch.m4:17: -1- m4_include([m4/compat.at])
+m4trace:m4/openvswitch.m4:20: -1- AC_DEFUN([OVS_CHECK_COVERAGE], [AC_REQUIRE([AC_PROG_CC])
+   AC_ARG_ENABLE(
+     [coverage],
+     [AC_HELP_STRING([--enable-coverage],
+                     [Enable gcov coverage tool.])],
+     [case "${enableval}" in
+        (yes) coverage=true ;;
+        (no)  coverage=false ;;
+        (*) AC_MSG_ERROR([bad value ${enableval} for --enable-coverage]) ;;
+      esac],
+     [coverage=false])
+   if $coverage; then
+     # Autoconf by default puts "-g -O2" in CFLAGS.  We need to remove the -O2
+     # option for coverage to be useful.  This does it without otherwise
+     # interfering with anything that the user might have put there.
+     old_CFLAGS=$CFLAGS
+     CFLAGS=
+     for option in $old_CFLAGS; do
+        case $option in
+            (-O2) ;;
+            (*) CFLAGS="$CFLAGS $option" ;;
+        esac
+     done
+
+     OVS_CFLAGS="$OVS_CFLAGS --coverage"
+     OVS_LDFLAGS="$OVS_LDFLAGS --coverage"
+   fi])
+m4trace:m4/openvswitch.m4:50: -1- AC_DEFUN([OVS_CHECK_NDEBUG], [AC_ARG_ENABLE(
+     [ndebug],
+     [AC_HELP_STRING([--enable-ndebug],
+                     [Disable debugging features for max performance])],
+     [case "${enableval}" in
+        (yes) ndebug=true ;;
+        (no)  ndebug=false ;;
+        (*) AC_MSG_ERROR([bad value ${enableval} for --enable-ndebug]) ;;
+      esac],
+     [ndebug=false])
+   AM_CONDITIONAL([NDEBUG], [test x$ndebug = xtrue])])
+m4trace:m4/openvswitch.m4:64: -1- AC_DEFUN([OVS_CHECK_ESX], [AC_CHECK_HEADER([vmware.h],
+                   [ESX=yes],
+                   [ESX=no])
+   AM_CONDITIONAL([ESX], [test "$ESX" = yes])
+   if test "$ESX" = yes; then
+      AC_DEFINE([ESX], [1], [Define to 1 if building on ESX.])
+   fi])
+m4trace:m4/openvswitch.m4:74: -1- AC_DEFUN([OVS_CHECK_WIN32], [AC_CHECK_HEADER([windows.h],
+                   [WIN32=yes],
+                   [WIN32=no])
+   AM_CONDITIONAL([WIN32], [test "$WIN32" = yes])
+   if test "$WIN32" = yes; then
+      AC_ARG_WITH([pthread],
+         [AS_HELP_STRING([--with-pthread=DIR],
+            [root of the pthread-win32 directory])],
+         [
+            case "$withval" in
+            "" | y | ye | yes | n | no)
+            AC_MSG_ERROR([Invalid --with-pthread value])
+              ;;
+            *)
+            PTHREAD_INCLUDES="-I$withval/include"
+            PTHREAD_LDFLAGS="-L$withval/lib/x86"
+            PTHREAD_LIBS="-lpthreadVC2"
+            AC_SUBST([PTHREAD_INCLUDES])
+            AC_SUBST([PTHREAD_LDFLAGS])
+            AC_SUBST([PTHREAD_LIBS])
+              ;;
+            esac
+         ], [
+            AC_MSG_ERROR([pthread directory not specified])
+         ]
+      )
+      AC_ARG_WITH([debug],
+         [AS_HELP_STRING([--with-debug],
+            [Build without compiler optimizations])],
+         [
+            MSVC_CFLAGS="-O0"
+            AC_SUBST([MSVC_CFLAGS])
+         ], [
+            MSVC_CFLAGS="-O2"
+            AC_SUBST([MSVC_CFLAGS])
+         ]
+      )
+
+      AC_DEFINE([WIN32], [1], [Define to 1 if building on WIN32.])
+      AH_BOTTOM([#ifdef WIN32
+#include "include/windows/windefs.h"
+#endif])
+   fi])
+m4trace:m4/openvswitch.m4:122: -1- AC_DEFUN([OVS_CHECK_VISUAL_STUDIO_DDK], [
+AC_ARG_WITH([vstudioddk],
+         [AS_HELP_STRING([--with-vstudioddk=version_type],
+            [Visual Studio DDK version type e.g. Win8.1 Release])],
+         [
+            case "$withval" in
+            "Win8.1 Release") ;;
+            "Win8.1 Debug") ;;
+            "Win8 Release") ;;
+            "Win8 Debug") ;;
+            *) AC_MSG_ERROR([No good Visual Studio configuration found]) ;;
+            esac
+
+            VSTUDIO_CONFIG=$withval
+         ], [
+            VSTUDIO_CONFIG=
+         ]
+      )
+
+  AC_SUBST([VSTUDIO_CONFIG])
+  AC_DEFINE([VSTUDIO_DDK], [1], [System uses the Visual Studio DDK version module.])
+  AM_CONDITIONAL([VSTUDIO_DDK], [test -n "$VSTUDIO_CONFIG"])
+])
+m4trace:m4/openvswitch.m4:147: -1- AC_DEFUN([OVS_CHECK_NETLINK], [AC_CHECK_HEADER([linux/netlink.h],
+                   [HAVE_NETLINK=yes],
+                   [HAVE_NETLINK=no],
+                   [#include <sys/socket.h>
+   ])
+   AM_CONDITIONAL([HAVE_NETLINK], [test "$HAVE_NETLINK" = yes])
+   if test "$HAVE_NETLINK" = yes; then
+      AC_DEFINE([HAVE_NETLINK], [1],
+                [Define to 1 if Netlink protocol is available.])
+   fi])
+m4trace:m4/openvswitch.m4:160: -1- AC_DEFUN([OVS_CHECK_OPENSSL], [AC_ARG_ENABLE(
+     [ssl],
+     [AC_HELP_STRING([--disable-ssl], [Disable OpenSSL support])],
+     [case "${enableval}" in
+        (yes) ssl=true ;;
+        (no)  ssl=false ;;
+        (*) AC_MSG_ERROR([bad value ${enableval} for --enable-ssl]) ;;
+      esac],
+     [ssl=check])
+
+   if test "$ssl" != false; then
+       AX_CHECK_OPENSSL(
+         [HAVE_OPENSSL=yes],
+         [HAVE_OPENSSL=no
+          if test "$ssl" = check; then
+            AC_MSG_WARN([Cannot find openssl:
+
+$SSL_PKG_ERRORS
+
+OpenFlow connections over SSL will not be supported.
+(You may use --disable-ssl to suppress this warning.)])
+          else
+            AC_MSG_ERROR([Cannot find openssl (use --disable-ssl to configure without SSL support)])
+          fi])
+   else
+       HAVE_OPENSSL=no
+   fi
+   AC_SUBST([HAVE_OPENSSL])
+   AM_CONDITIONAL([HAVE_OPENSSL], [test "$HAVE_OPENSSL" = yes])
+   if test "$HAVE_OPENSSL" = yes; then
+      AC_DEFINE([HAVE_OPENSSL], [1], [Define to 1 if OpenSSL is installed.])
+   fi])
+m4trace:m4/openvswitch.m4:195: -1- AC_DEFUN([OVS_CHECK_SOCKET_LIBS], [AC_CHECK_LIB([socket], [connect])
+   AC_SEARCH_LIBS([gethostbyname], [resolv])])
+m4trace:m4/openvswitch.m4:200: -1- AC_DEFUN([OVS_CHECK_PKIDIR], [AC_ARG_WITH(
+     [pkidir],
+     AC_HELP_STRING([--with-pkidir=DIR],
+                    [PKI hierarchy directory [[LOCALSTATEDIR/lib/openvswitch/pki]]]),
+     [PKIDIR=$withval],
+     [PKIDIR='${localstatedir}/lib/openvswitch/pki'])
+   AC_SUBST([PKIDIR])])
+m4trace:m4/openvswitch.m4:210: -1- AC_DEFUN([OVS_CHECK_RUNDIR], [AC_ARG_WITH(
+     [rundir],
+     AC_HELP_STRING([--with-rundir=DIR],
+                    [directory used for pidfiles
+                    [[LOCALSTATEDIR/run/openvswitch]]]),
+     [RUNDIR=$withval],
+     [RUNDIR='${localstatedir}/run/openvswitch'])
+   AC_SUBST([RUNDIR])])
+m4trace:m4/openvswitch.m4:221: -1- AC_DEFUN([OVS_CHECK_LOGDIR], [AC_ARG_WITH(
+     [logdir],
+     AC_HELP_STRING([--with-logdir=DIR],
+                    [directory used for logs [[LOCALSTATEDIR/log/PACKAGE]]]),
+     [LOGDIR=$withval],
+     [LOGDIR='${localstatedir}/log/${PACKAGE}'])
+   AC_SUBST([LOGDIR])])
+m4trace:m4/openvswitch.m4:231: -1- AC_DEFUN([OVS_CHECK_DBDIR], [AC_ARG_WITH(
+     [dbdir],
+     AC_HELP_STRING([--with-dbdir=DIR],
+                    [directory used for conf.db [[SYSCONFDIR/PACKAGE]]]),
+     [DBDIR=$withval],
+     [DBDIR='${sysconfdir}/${PACKAGE}'])
+   AC_SUBST([DBDIR])])
+m4trace:m4/openvswitch.m4:241: -1- AC_DEFUN([OVS_CHECK_BACKTRACE], [AC_SEARCH_LIBS([backtrace], [execinfo ubacktrace],
+                  [AC_DEFINE([HAVE_BACKTRACE], [1],
+                             [Define to 1 if you have backtrace(3).])])])
+m4trace:m4/openvswitch.m4:247: -1- AC_DEFUN([OVS_CHECK_VALGRIND], [AC_CHECK_HEADERS([valgrind/valgrind.h])])
+m4trace:m4/openvswitch.m4:251: -1- AC_DEFUN([OVS_CHECK_PYTHON], [AC_CACHE_CHECK(
+     [for Python 2.x for x >= 4],
+     [ovs_cv_python],
+     [if test -n "$PYTHON"; then
+        ovs_cv_python=$PYTHON
+      else
+        ovs_cv_python=no
+        for binary in python python2.4 python2.5 python2.7; do
+          ovs_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+          for dir in $PATH; do
+            IFS=$ovs_save_IFS
+            test -z "$dir" && dir=.
+            if test -x "$dir"/"$binary" && "$dir"/"$binary" -c 'import sys
+if sys.hexversion >= 0x02040000 and sys.hexversion < 0x03000000:
+    sys.exit(0)
+else:
+    sys.exit(1)'; then
+              ovs_cv_python=$dir/$binary
+              break 2
+            fi
+          done
+        done
+      fi])
+   AC_SUBST([HAVE_PYTHON])
+   AM_MISSING_PROG([PYTHON], [python])
+   if test $ovs_cv_python != no; then
+     PYTHON=$ovs_cv_python
+     HAVE_PYTHON=yes
+   else
+     HAVE_PYTHON=no
+   fi
+   AM_CONDITIONAL([HAVE_PYTHON], [test "$HAVE_PYTHON" = yes])])
+m4trace:m4/openvswitch.m4:286: -1- AC_DEFUN([OVS_CHECK_DOT], [AC_CACHE_CHECK(
+    [for dot],
+    [ovs_cv_dot],
+    [dnl "dot" writes -V output to stderr:
+     if (dot -V) 2>&1 | grep '^dot - [[gG]]raphviz version' >/dev/null 2>&1; then
+       ovs_cv_dot=yes
+     else
+       ovs_cv_dot=no
+     fi])
+   AM_CONDITIONAL([HAVE_DOT], [test "$ovs_cv_dot" = yes])])
+m4trace:m4/openvswitch.m4:299: -1- AC_DEFUN([OVS_CHECK_PYTHON_MODULE], [AC_REQUIRE([OVS_CHECK_PYTHON])
+   AC_CACHE_CHECK(
+     [for $1 Python module],
+     [ovs_cv_py_[]AS_TR_SH([$1])],
+     [ovs_cv_py_[]AS_TR_SH([$1])=no
+      if test $HAVE_PYTHON = yes; then
+        AS_ECHO(["running $PYTHON -c 'import $1
+import sys
+sys.exit(0)'..."]) >&AS_MESSAGE_LOG_FD 2>&1
+        if $PYTHON -c 'import $1
+import sys
+sys.exit(0)' >&AS_MESSAGE_LOG_FD 2>&1; then
+          ovs_cv_py_[]AS_TR_SH([$1])=yes
+        fi
+      fi])])
+m4trace:m4/openvswitch.m4:317: -1- AC_DEFUN([OVS_CHECK_PYTHON_COMPAT], [OVS_CHECK_PYTHON_MODULE([uuid])
+   if test $ovs_cv_py_uuid = yes; then
+     INCLUDE_PYTHON_COMPAT=no
+   else
+     INCLUDE_PYTHON_COMPAT=yes
+   fi
+   AC_MSG_CHECKING([whether to add python/compat to PYTHONPATH])
+   AC_MSG_RESULT([$INCLUDE_PYTHON_COMPAT])
+   AM_CONDITIONAL([INCLUDE_PYTHON_COMPAT], [test $INCLUDE_PYTHON_COMPAT = yes])])
+m4trace:m4/openvswitch.m4:329: -1- AC_DEFUN([OVS_CHECK_GROFF], [AC_CACHE_CHECK(
+    [for groff],
+    [ovs_cv_groff],
+    [if (groff -v) >/dev/null 2>&1; then
+       ovs_cv_groff=yes
+     else
+       ovs_cv_groff=no
+     fi])
+   AM_CONDITIONAL([HAVE_GROFF], [test "$ovs_cv_groff" = yes])])
+m4trace:m4/openvswitch.m4:347: -1- AC_DEFUN([OVS_CHECK_TLS], [AC_CACHE_CHECK(
+     [whether $CC has <threads.h> that supports thread_local],
+     [ovs_cv_thread_local],
+     [AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM([#include <threads.h>
+static thread_local int var;], [return var;])],
+        [ovs_cv_thread_local=yes],
+        [ovs_cv_thread_local=no])])
+   if test $ovs_cv_thread_local = yes; then
+     AC_DEFINE([HAVE_THREAD_LOCAL], [1],
+               [Define to 1 if the C compiler and linker supports the C11
+                thread_local matcro defined in <threads.h>.])
+   else
+     AC_CACHE_CHECK(
+       [whether $CC supports __thread],
+       [ovs_cv___thread],
+       [AC_LINK_IFELSE(
+          [AC_LANG_PROGRAM([static __thread int var;], [return var;])],
+          [ovs_cv___thread=yes],
+          [ovs_cv___thread=no])])
+     if test $ovs_cv___thread = yes; then
+       AC_DEFINE([HAVE___THREAD], [1],
+                 [Define to 1 if the C compiler and linker supports the
+                  GCC __thread extenions.])
+     fi
+   fi])
+m4trace:m4/openvswitch.m4:378: -1- AC_DEFUN([OVS_CHECK_ATOMIC_LIBS], [AC_SEARCH_LIBS([__atomic_load_8], [atomic])])
+m4trace:m4/openvswitch.m4:387: -1- AC_DEFUN([OVS_CHECK_GCC4_ATOMICS], [AC_CACHE_CHECK(
+     [whether $CC supports GCC 4.0+ atomic built-ins],
+     [ovs_cv_gcc4_atomics],
+     [AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM([[#include <stdlib.h>
+
+#define ovs_assert(expr) if (!(expr)) abort();
+#define TEST_ATOMIC_TYPE(TYPE)                  \
+    {                                           \
+        TYPE x = 1;                             \
+        TYPE orig;                              \
+                                                \
+        __sync_synchronize();                   \
+        ovs_assert(x == 1);                     \
+                                                \
+        __sync_synchronize();                   \
+        x = 3;                                  \
+        __sync_synchronize();                   \
+        ovs_assert(x == 3);                     \
+                                                \
+        orig = __sync_fetch_and_add(&x, 1);     \
+        ovs_assert(orig == 3);                  \
+        __sync_synchronize();                   \
+        ovs_assert(x == 4);                     \
+                                                \
+        orig = __sync_fetch_and_sub(&x, 2);     \
+        ovs_assert(orig == 4);                  \
+        __sync_synchronize();                   \
+        ovs_assert(x == 2);                     \
+                                                \
+        orig = __sync_fetch_and_or(&x, 6);      \
+        ovs_assert(orig == 2);                  \
+        __sync_synchronize();                   \
+        ovs_assert(x == 6);                     \
+                                                \
+        orig = __sync_fetch_and_and(&x, 10);    \
+        ovs_assert(orig == 6);                  \
+        __sync_synchronize();                   \
+        ovs_assert(x == 2);                     \
+                                                \
+        orig = __sync_fetch_and_xor(&x, 10);    \
+        ovs_assert(orig == 2);                  \
+        __sync_synchronize();                   \
+        ovs_assert(x == 8);                     \
+    }]], [dnl
+TEST_ATOMIC_TYPE(char);
+TEST_ATOMIC_TYPE(unsigned char);
+TEST_ATOMIC_TYPE(signed char);
+TEST_ATOMIC_TYPE(short);
+TEST_ATOMIC_TYPE(unsigned short);
+TEST_ATOMIC_TYPE(int);
+TEST_ATOMIC_TYPE(unsigned int);
+TEST_ATOMIC_TYPE(long int);
+TEST_ATOMIC_TYPE(unsigned long int);
+TEST_ATOMIC_TYPE(long long int);
+TEST_ATOMIC_TYPE(unsigned long long int);
+])],
+        [ovs_cv_gcc4_atomics=yes],
+        [ovs_cv_gcc4_atomics=no])])
+   if test $ovs_cv_gcc4_atomics = yes; then
+     AC_DEFINE([HAVE_GCC4_ATOMICS], [1],
+               [Define to 1 if the C compiler and linker supports the GCC 4.0+
+                atomic built-ins.])
+   fi])
+m4trace:m4/openvswitch.m4:456: -1- AC_DEFUN([OVS_CHECK_ATOMIC_ALWAYS_LOCK_FREE], [AC_CACHE_CHECK(
+    [value of __atomic_always_lock_free($1)],
+    [ovs_cv_atomic_always_lock_free_$1],
+    [AC_COMPUTE_INT(
+        [ovs_cv_atomic_always_lock_free_$1],
+        [__atomic_always_lock_free($1, 0)],
+        [],
+        [ovs_cv_atomic_always_lock_free_$1=unsupported])])
+   if test ovs_cv_atomic_always_lock_free_$1 != unsupported; then
+     AC_DEFINE_UNQUOTED(
+       [ATOMIC_ALWAYS_LOCK_FREE_$1B],
+       [$ovs_cv_atomic_always_lock_free_$1],
+       [If the C compiler is GCC 4.7 or later, define to the return value of
+        __atomic_always_lock_free($1, 0).  If the C compiler is not GCC or is
+        an older version of GCC, the value does not matter.])
+   fi])
+m4trace:m4/openvswitch.m4:475: -1- AC_DEFUN([OVS_CHECK_POSIX_AIO], [AC_SEARCH_LIBS([aio_write], [rt])
+   AM_CONDITIONAL([HAVE_POSIX_AIO], [test "$ac_cv_search_aio_write" != no])])
+m4trace:m4/openvswitch.m4:480: -1- AC_DEFUN([OVS_CHECK_INCLUDE_NEXT], [AC_REQUIRE([gl_CHECK_NEXT_HEADERS])
+   gl_CHECK_NEXT_HEADERS([$1])])
+m4trace:m4/openvswitch.m4:485: -1- AC_DEFUN([OVS_CHECK_PRAGMA_MESSAGE], [AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+   [[_Pragma("message(\"Checking for pragma message\")")
+   ]])],
+     [AC_DEFINE(HAVE_PRAGMA_MESSAGE,1,[Define if compiler supports #pragma
+     message directive])])
+  ])
+m4trace:acinclude.m4:18: -1- AC_DEFUN([OVS_ENABLE_WERROR], [AC_ARG_ENABLE(
+     [Werror],
+     [AC_HELP_STRING([--enable-Werror], [Add -Werror to CFLAGS])],
+     [], [enable_Werror=no])
+   AC_CONFIG_COMMANDS_PRE(
+     [if test "X$enable_Werror" = Xyes; then
+        OVS_CFLAGS="$OVS_CFLAGS -Werror"
+      fi])])
+m4trace:acinclude.m4:31: -1- AC_DEFUN([OVS_CHECK_LINUX], [
+  AC_ARG_WITH([linux],
+              [AC_HELP_STRING([--with-linux=/path/to/linux],
+                              [Specify the Linux kernel build directory])])
+  AC_ARG_WITH([linux-source],
+              [AC_HELP_STRING([--with-linux-source=/path/to/linux-source],
+                              [Specify the Linux kernel source directory
+                               (usually figured out automatically from build
+                               directory)])])
+
+  # Deprecated equivalents to --with-linux, --with-linux-source.
+  AC_ARG_WITH([l26])
+  AC_ARG_WITH([l26-source])
+
+  if test X"$with_linux" != X; then
+    KBUILD=$with_linux
+  elif test X"$with_l26" != X; then
+    KBUILD=$with_l26
+    AC_MSG_WARN([--with-l26 is deprecated, please use --with-linux instead])
+  else
+    KBUILD=
+  fi
+
+  if test X"$KBUILD" != X; then
+    if test X"$with_linux_source" != X; then
+      KSRC=$with_linux_source
+    elif test X"$with_l26_source" != X; then
+      KSRC=$with_l26_source
+      AC_MSG_WARN([--with-l26-source is deprecated, please use --with-linux-source instead])
+    else
+      KSRC=
+    fi
+  elif test X"$with_linux_source" != X || test X"$with_l26_source" != X; then
+    AC_MSG_ERROR([Linux source directory may not be specified without Linux build directory])
+  fi
+
+  if test -n "$KBUILD"; then
+    KBUILD=`eval echo "$KBUILD"`
+    case $KBUILD in
+        /*) ;;
+        *) KBUILD=`pwd`/$KBUILD ;;
+    esac
+
+    # The build directory is what the user provided.
+    # Make sure that it exists.
+    AC_MSG_CHECKING([for Linux build directory])
+    if test -d "$KBUILD"; then
+        AC_MSG_RESULT([$KBUILD])
+        AC_SUBST(KBUILD)
+    else
+        AC_MSG_RESULT([no])
+        AC_ERROR([source dir $KBUILD doesn't exist])
+    fi
+
+    # Debian breaks kernel headers into "source" header and "build" headers.
+    # We want the source headers, but $KBUILD gives us the "build" headers.
+    # Use heuristics to find the source headers.
+    AC_MSG_CHECKING([for Linux source directory])
+    if test -n "$KSRC"; then
+      KSRC=`eval echo "$KSRC"`
+      case $KSRC in
+          /*) ;;
+          *) KSRC=`pwd`/$KSRC ;;
+      esac
+      if test ! -e $KSRC/include/linux/kernel.h; then
+        AC_MSG_ERROR([$KSRC is not a kernel source directory])
+      fi
+    else
+      KSRC=$KBUILD
+      if test ! -e $KSRC/include/linux/kernel.h; then
+        # Debian kernel build Makefiles tend to include a line of the form:
+        # MAKEARGS := -C /usr/src/linux-headers-3.2.0-1-common O=/usr/src/linux-headers-3.2.0-1-486
+        # First try to extract the source directory from this line.
+        KSRC=`sed -n 's/.*-C \([[^ ]]*\).*/\1/p' "$KBUILD"/Makefile`
+        if test ! -e "$KSRC"/include/linux/kernel.h; then
+          # Didn't work.  Fall back to name-based heuristics that used to work.
+          case `echo "$KBUILD" | sed 's,/*$,,'` in # (
+            */build)
+              KSRC=`echo "$KBUILD" | sed 's,/build/*$,/source,'`
+              ;; # (
+            *)
+              KSRC=`(cd $KBUILD && pwd -P) | sed 's,-[[^-]]*$,-common,'`
+              ;;
+          esac
+        fi
+      fi
+      if test ! -e "$KSRC"/include/linux/kernel.h; then
+        AC_MSG_ERROR([cannot find source directory (please use --with-linux-source)])
+      fi
+    fi
+    AC_MSG_RESULT([$KSRC])
+
+    AC_MSG_CHECKING([for kernel version])
+    version=`sed -n 's/^VERSION = //p' "$KSRC/Makefile"`
+    patchlevel=`sed -n 's/^PATCHLEVEL = //p' "$KSRC/Makefile"`
+    sublevel=`sed -n 's/^SUBLEVEL = //p' "$KSRC/Makefile"`
+    if test X"$version" = X || test X"$patchlevel" = X; then
+       AC_ERROR([cannot determine kernel version])
+    elif test X"$sublevel" = X; then
+       kversion=$version.$patchlevel
+    else
+       kversion=$version.$patchlevel.$sublevel
+    fi
+    AC_MSG_RESULT([$kversion])
+
+    if test "$version" -ge 3; then
+       if test "$version" = 3 && test "$patchlevel" -le 18; then
+          : # Linux 3.x
+       else
+         AC_ERROR([Linux kernel in $KBUILD is version $kversion, but version newer than 3.18.x is not supported (please refer to the FAQ for advice)])
+       fi
+    else
+       if test "$version" -le 1 || test "$patchlevel" -le 5 || test "$sublevel" -le 31; then
+         AC_ERROR([Linux kernel in $KBUILD is version $kversion, but version 2.6.32 or later is required])
+       else
+         : # Linux 2.6.x
+       fi
+    fi
+    if (test ! -e "$KBUILD"/include/linux/version.h && \
+        test ! -e "$KBUILD"/include/generated/uapi/linux/version.h)|| \
+       (test ! -e "$KBUILD"/include/linux/autoconf.h && \
+        test ! -e "$KBUILD"/include/generated/autoconf.h); then
+        AC_MSG_ERROR([Linux kernel source in $KBUILD is not configured])
+    fi
+    OVS_CHECK_LINUX_COMPAT
+  fi
+  AM_CONDITIONAL(LINUX_ENABLED, test -n "$KBUILD")
+])
+m4trace:acinclude.m4:163: -1- AC_DEFUN([OVS_CHECK_DPDK], [
+  AC_ARG_WITH([dpdk],
+              [AC_HELP_STRING([--with-dpdk=/path/to/dpdk],
+                              [Specify the DPDK build directory])])
+
+  if test X"$with_dpdk" != X; then
+    RTE_SDK=$with_dpdk
+
+    DPDK_INCLUDE=$RTE_SDK/include
+    DPDK_LIB_DIR=$RTE_SDK/lib
+    DPDK_LIB=-lintel_dpdk
+
+    ovs_save_CFLAGS="$CFLAGS"
+    ovs_save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS -L$DPDK_LIB_DIR"
+    CFLAGS="$CFLAGS -I$DPDK_INCLUDE"
+
+    # On some systems we have to add -ldl to link with dpdk
+    #
+    # This code, at first, tries to link without -ldl (""),
+    # then adds it and tries again.
+    # Before each attempt the search cache must be unset,
+    # otherwise autoconf will stick with the old result
+
+    found=false
+    save_LIBS=$LIBS
+    for extras in "" "-ldl"; do
+        LIBS="$DPDK_LIB $extras $save_LIBS"
+        AC_LINK_IFELSE(
+           [AC_LANG_PROGRAM([#include <rte_config.h>
+                             #include <rte_eal.h>],
+                            [int rte_argc; char ** rte_argv;
+                             rte_eal_init(rte_argc, rte_argv);])],
+           [found=true])
+        if $found; then
+            break
+        fi
+    done
+    if $found; then :; else
+        AC_MSG_ERROR([cannot link with dpdk])
+    fi
+    CFLAGS="$ovs_save_CFLAGS"
+    LDFLAGS="$ovs_save_LDFLAGS"
+    OVS_LDFLAGS="$OVS_LDFLAGS -L$DPDK_LIB_DIR"
+    OVS_CFLAGS="$OVS_CFLAGS -I$DPDK_INCLUDE"
+
+    # DPDK 1.7 pmd drivers are not linked unless --whole-archive is used.
+    #
+    # This happens because the rest of the DPDK code doesn't use any symbol in
+    # the pmd driver objects, and the drivers register themselves using an
+    # __attribute__((constructor)) function.
+    #
+    # These options are specified inside a single -Wl directive to prevent
+    # autotools from reordering them.
+    DPDK_vswitchd_LDFLAGS=-Wl,--whole-archive,$DPDK_LIB,--no-whole-archive
+    AC_SUBST([DPDK_vswitchd_LDFLAGS])
+    AC_DEFINE([DPDK_NETDEV], [1], [System uses the DPDK module.])
+  else
+    RTE_SDK=
+  fi
+
+  AM_CONDITIONAL([DPDK_NETDEV], test -n "$RTE_SDK")
+])
+m4trace:acinclude.m4:232: -1- AC_DEFUN([OVS_GREP_IFELSE], [
+  AC_MSG_CHECKING([whether $2 matches in $1])
+  if test -f $1; then
+    grep '$2' $1 >/dev/null 2>&1
+    status=$?
+    case $status in
+      0) 
+        AC_MSG_RESULT([yes])
+        m4_if([$3], [], [OVS_DEFINE([HAVE_]m4_toupper([$2]))], [$3])
+        ;;
+      1) 
+        AC_MSG_RESULT([no])
+        $4
+        ;;
+      *) 
+        AC_MSG_ERROR([grep exited with status $status])
+        ;;
+    esac
+  else
+    AC_MSG_RESULT([file not found])
+    $4
+  fi
+])
+m4trace:acinclude.m4:259: -1- AC_DEFUN([OVS_DEFINE], [
+  echo '#define $1 1' >> datapath/linux/kcompat.h.new
+])
+m4trace:acinclude.m4:263: -1- AC_DEFUN([OVS_CHECK_LOG2_H], [
+  AC_MSG_CHECKING([for $KSRC/include/linux/log2.h])
+  if test -e $KSRC/include/linux/log2.h; then
+    AC_MSG_RESULT([yes])
+    OVS_DEFINE([HAVE_LOG2_H])
+  else
+    AC_MSG_RESULT([no])
+  fi
+])
+m4trace:acinclude.m4:277: -1- AC_DEFUN([OVS_CHECK_LINUX_COMPAT], [
+  rm -f datapath/linux/kcompat.h.new
+  mkdir -p datapath/linux
+  : > datapath/linux/kcompat.h.new
+
+  OVS_GREP_IFELSE([$KSRC/arch/x86/include/asm/checksum_32.h], [src_err,],
+                  [OVS_DEFINE([HAVE_CSUM_COPY_DBG])])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/err.h], [ERR_CAST])
+  OVS_GREP_IFELSE([$KSRC/include/linux/err.h], [IS_ERR_OR_NULL])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/etherdevice.h], [eth_hw_addr_random])
+  OVS_GREP_IFELSE([$KSRC/include/linux/etherdevice.h], [ether_addr_copy])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/if_vlan.h], [vlan_set_encap_proto])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/in.h], [ipv4_is_multicast])
+  OVS_GREP_IFELSE([$KSRC/include/net/ip.h], [__ip_select_ident.*dst_entry],
+                  [OVS_DEFINE([HAVE_IP_SELECT_IDENT_USING_DST_ENTRY])])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [dev_disable_lro])
+  OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [dev_get_stats])
+  OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [dev_get_by_index_rcu])
+  OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [__skb_gso_segment])
+  OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [can_checksum_protocol])
+  OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [netdev_features_t])
+  OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [pcpu_sw_netstats])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/random.h], [prandom_u32])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/rcupdate.h], [rcu_read_lock_held], [],
+                  [OVS_GREP_IFELSE([$KSRC/include/linux/rtnetlink.h],
+                                   [rcu_read_lock_held])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/rtnetlink.h], [lockdep_rtnl_is_held])
+  
+  # Check for the proto_data_valid member in struct sk_buff.  The [^@]
+  # is necessary because some versions of this header remove the
+  # member but retain the kerneldoc comment that describes it (which
+  # starts with @).  The brackets must be doubled because of m4
+  # quoting rules.
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [[[^@]]proto_data_valid],
+                  [OVS_DEFINE([HAVE_PROTO_DATA_VALID])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [rxhash])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [u16.*rxhash],
+                  [OVS_DEFINE([HAVE_U16_RXHASH])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_dst(],
+                  [OVS_DEFINE([HAVE_SKB_DST_ACCESSOR_FUNCS])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], 
+                  [skb_copy_from_linear_data_offset])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h],
+                  [skb_reset_tail_pointer])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_cow_head])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_transport_header],
+                  [OVS_DEFINE([HAVE_SKBUFF_HEADER_HELPERS])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/icmpv6.h], [icmp6_hdr],
+                  [OVS_DEFINE([HAVE_ICMP6_HDR])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_warn_if_lro],
+                  [OVS_DEFINE([HAVE_SKB_WARN_LRO])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [consume_skb])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_frag_page])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_has_frag_list])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [__skb_fill_page_desc])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_reset_mac_len])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_unclone])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_orphan_frags])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_get_hash])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_clear_hash])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [int.skb_zerocopy(],
+                  [OVS_DEFINE([HAVE_SKB_ZEROCOPY])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [l4_rxhash])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_ensure_writable])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_vlan_pop])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_vlan_push])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/types.h], [bool],
+                  [OVS_DEFINE([HAVE_BOOL_TYPE])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/types.h], [__wsum],
+                  [OVS_DEFINE([HAVE_CSUM_TYPES])])
+  OVS_GREP_IFELSE([$KSRC/include/uapi/linux/types.h], [__wsum],
+                  [OVS_DEFINE([HAVE_CSUM_TYPES])])
+
+  OVS_GREP_IFELSE([$KSRC/include/net/checksum.h], [csum_replace4])
+  OVS_GREP_IFELSE([$KSRC/include/net/checksum.h], [csum_unfold])
+
+  OVS_GREP_IFELSE([$KSRC/include/net/genetlink.h], [genl_has_listeners])
+  OVS_GREP_IFELSE([$KSRC/include/net/genetlink.h], [mcgrp_offset])
+  OVS_GREP_IFELSE([$KSRC/include/net/genetlink.h], [parallel_ops])
+  OVS_GREP_IFELSE([$KSRC/include/net/genetlink.h], [genlmsg_new_unicast])
+  OVS_GREP_IFELSE([$KSRC/include/net/gre.h], [gre_cisco_register])
+  OVS_GREP_IFELSE([$KSRC/include/net/gre.h], [gre_handle_offloads])
+  OVS_GREP_IFELSE([$KSRC/include/net/ip_tunnels.h], [iptunnel_xmit.*net],
+                  [OVS_DEFINE([HAVE_IPTUNNEL_XMIT_NET])])
+  OVS_GREP_IFELSE([$KSRC/include/net/ipv6.h], [IP6_FH_F_SKIP_RH])
+  OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_get_be16])
+  OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_put_be16])
+  OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_put_be32])
+  OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_put_be64])
+  OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_find_nested])
+  OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_is_last])
+
+  OVS_GREP_IFELSE([$KSRC/include/net/sctp/checksum.h], [sctp_compute_cksum])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/if_vlan.h], [ADD_ALL_VLANS_CMD],
+                  [OVS_DEFINE([HAVE_VLAN_BUG_WORKAROUND])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/if_vlan.h], [vlan_insert_tag_set_proto])
+  OVS_GREP_IFELSE([$KSRC/include/linux/if_vlan.h], [__vlan_insert_tag])
+
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/u64_stats_sync.h], [u64_stats_fetch_begin_irq])
+
+  OVS_GREP_IFELSE([$KSRC/include/linux/openvswitch.h], [openvswitch_handle_frame_hook],
+                  [OVS_DEFINE([HAVE_RHEL_OVS_HOOK])])
+  OVS_GREP_IFELSE([$KSRC/include/net/vxlan.h], [vxlan_xmit_skb])
+  OVS_GREP_IFELSE([$KSRC/include/net/vxlan.h], [bool xnet],
+                  [OVS_DEFINE([HAVE_VXLAN_XMIT_SKB_XNET_ARG])])
+  OVS_GREP_IFELSE([$KSRC/include/net/udp.h], [udp_flow_src_port],
+                  [OVS_DEFINE([HAVE_UDP_FLOW_SRC_PORT])])
+  OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [ignore_df:1],
+                  [OVS_DEFINE([HAVE_IGNORE_DF_RENAME])])
+  OVS_GREP_IFELSE([$KSRC/include/uapi/linux/netdevice.h], [NET_NAME_UNKNOWN],
+                  [OVS_DEFINE([HAVE_NET_NAME_UNKNOWN])])
+
+  OVS_CHECK_LOG2_H
+
+  if cmp -s datapath/linux/kcompat.h.new \
+            datapath/linux/kcompat.h >/dev/null 2>&1; then
+    rm datapath/linux/kcompat.h.new
+  else
+    mv datapath/linux/kcompat.h.new datapath/linux/kcompat.h
+  fi
+])
+m4trace:acinclude.m4:410: -1- AC_DEFUN([OVS_CHECK_IF_PACKET], [AC_CHECK_HEADER([net/if_packet.h],
+                   [HAVE_IF_PACKET=yes],
+                   [HAVE_IF_PACKET=no])
+   AM_CONDITIONAL([HAVE_IF_PACKET], [test "$HAVE_IF_PACKET" = yes])
+   if test "$HAVE_IF_PACKET" = yes; then
+      AC_DEFINE([HAVE_IF_PACKET], [1],
+                [Define to 1 if net/if_packet.h is available.])
+   fi])
+m4trace:acinclude.m4:424: -1- AC_DEFUN([OVS_CHECK_IF_DL], [AC_CHECK_HEADER([net/if_dl.h],
+                   [HAVE_IF_DL=yes],
+                   [HAVE_IF_DL=no])
+   AM_CONDITIONAL([HAVE_IF_DL], [test "$HAVE_IF_DL" = yes])
+   if test "$HAVE_IF_DL" = yes; then
+      AC_DEFINE([HAVE_IF_DL], [1],
+                [Define to 1 if net/if_dl.h is available.])
+
+      # On these platforms we use libpcap to access network devices.
+      AC_SEARCH_LIBS([pcap_open_live], [pcap])
+   fi])
+m4trace:acinclude.m4:443: -1- AC_DEFUN([OVS_CHECK_STRTOK_R], [AC_CACHE_CHECK(
+     [whether strtok_r macro segfaults on some inputs],
+     [ovs_cv_strtok_r_bug],
+     [AC_RUN_IFELSE(
+        [AC_LANG_PROGRAM([#include <stdio.h>
+                          #include <string.h>
+                         ],
+                         [[char string[] = ":::";
+                           char *save_ptr = (char *) 0xc0ffee;
+                           char *token1, *token2;
+                           token1 = strtok_r(string, ":", &save_ptr);
+                           token2 = strtok_r(NULL, ":", &save_ptr);
+                           freopen ("/dev/null", "w", stdout);
+                           printf ("%s %s\n", token1, token2);
+                           return 0;
+                          ]])],
+        [ovs_cv_strtok_r_bug=no],
+        [ovs_cv_strtok_r_bug=yes],
+        [ovs_cv_strtok_r_bug=yes])])
+   if test $ovs_cv_strtok_r_bug = yes; then
+     AC_DEFINE([HAVE_STRTOK_R_BUG], [1],
+               [Define if strtok_r macro segfaults on some inputs])
+   fi
+])
+m4trace:acinclude.m4:476: -1- AC_DEFUN([_OVS_CHECK_CC_OPTION], [dnl
+  m4_define([ovs_cv_name], [ovs_cv_[]m4_translit([$1], [-=], [__])])dnl
+  AC_CACHE_CHECK([whether $CC accepts $1], [ovs_cv_name], 
+    [ovs_save_CFLAGS="$CFLAGS"
+     dnl Include -Werror in the compiler options, because without -Werror
+     dnl clang's GCC-compatible compiler driver does not return a failure
+     dnl exit status even though it complains about options it does not
+     dnl understand.
+     CFLAGS="$CFLAGS $WERROR $1"
+     AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,)], [ovs_cv_name[]=yes], [ovs_cv_name[]=no])
+     CFLAGS="$ovs_save_CFLAGS"])
+  if test $ovs_cv_name = yes; then
+    m4_if([$2], [], [:], [$2])
+  else
+    m4_if([$3], [], [:], [$3])
+  fi
+])
+m4trace:acinclude.m4:498: -1- AC_DEFUN([OVS_CHECK_WERROR], [WERROR=
+   _OVS_CHECK_CC_OPTION([-Werror], [WERROR=-Werror])])
+m4trace:acinclude.m4:505: -1- AC_DEFUN([OVS_CHECK_CC_OPTION], [AC_REQUIRE([OVS_CHECK_WERROR])
+   _OVS_CHECK_CC_OPTION([$1], [$2], [$3])])
+m4trace:acinclude.m4:513: -1- AC_DEFUN([OVS_ENABLE_OPTION], [OVS_CHECK_CC_OPTION([$1], [WARNING_FLAGS="$WARNING_FLAGS $1"])
+   AC_SUBST([WARNING_FLAGS])])
+m4trace:acinclude.m4:522: -1- AC_DEFUN([OVS_CONDITIONAL_CC_OPTION], [OVS_CHECK_CC_OPTION(
+    [$1], [ovs_have_cc_option=yes], [ovs_have_cc_option=no])
+   AM_CONDITIONAL([$2], [test $ovs_have_cc_option = yes])])
+m4trace:acinclude.m4:529: -1- AC_DEFUN([OVS_CHECK_XENSERVER_VERSION], [AC_CACHE_CHECK([XenServer release], [ovs_cv_xsversion],
+    [if test -e /etc/redhat-release; then
+       ovs_cv_xsversion=`sed -n 's/^XenServer DDK release \([[^-]]*\)-.*/\1/p' /etc/redhat-release`
+     fi
+     if test -z "$ovs_cv_xsversion"; then
+       ovs_cv_xsversion=none
+     fi])
+  case $ovs_cv_xsversion in
+    none)
+      ;;
+
+    [[1-9]][[0-9]]* |                    dnl XenServer 10 or later
+    [[6-9]]* |                           dnl XenServer 6 or later
+    5.[[7-9]]* |                         dnl XenServer 5.7 or later
+    5.6.[[1-9]][[0-9]][[0-9]][[0-9]]* |  dnl XenServer 5.6.1000 or later
+    5.6.[[2-9]][[0-9]][[0-9]]* |         dnl XenServer 5.6.200 or later
+    5.6.1[[0-9]][[0-9]])                 dnl Xenserver 5.6.100 or later
+      ;;
+
+    *)
+      AC_MSG_ERROR([This appears to be XenServer $ovs_cv_xsversion, but only XenServer 5.6.100 or later is supported.  (If you are really using a supported version of XenServer, you may override this error message by specifying 'ovs_cv_xsversion=5.6.100' on the "configure" command line.)])
+      ;;
+  esac])
+m4trace:acinclude.m4:558: -1- AC_DEFUN([OVS_CHECK_MAKE_IF], [AC_CACHE_CHECK(
+     [whether ${MAKE-make} has GNU make \$(if) extension],
+     [ovs_cv_gnu_make_if],
+     [cat <<'EOF' > conftest.mk
+conftest.out:
+	echo $(if x,y,z) > conftest.out
+.PHONY: all
+EOF
+      rm -f conftest.out
+      AS_ECHO(["$as_me:$LINENO: invoking ${MAKE-make} -f conftest.mk all:"]) >&AS_MESSAGE_LOG_FD 2>&1
+      ${MAKE-make} -f conftest.mk conftest.out >&AS_MESSAGE_LOG_FD 2>&1
+      AS_ECHO(["$as_me:$LINENO: conftest.out contains:"]) >&AS_MESSAGE_LOG_FD 2>&1
+      cat conftest.out >&AS_MESSAGE_LOG_FD 2>&1
+      result=`cat conftest.out`
+      rm -f conftest.mk conftest.out
+      if test "X$result" = "Xy"; then
+        ovs_cv_gnu_make_if=yes
+      else
+        ovs_cv_gnu_make_if=no
+      fi])])
+m4trace:acinclude.m4:584: -1- AC_DEFUN([OVS_CHECK_GNU_MAKE], [AC_CACHE_CHECK(
+     [whether ${MAKE-make} is GNU make],
+     [ovs_cv_gnu_make],
+     [rm -f conftest.out
+      AS_ECHO(["$as_me:$LINENO: invoking ${MAKE-make} --version:"]) >&AS_MESSAGE_LOG_FD 2>&1
+      ${MAKE-make} --version >conftest.out 2>&1
+      cat conftest.out >&AS_MESSAGE_LOG_FD 2>&1
+      result=`cat conftest.out`
+      rm -f conftest.mk conftest.out
+
+      case $result in # (
+        GNU*) ovs_cv_gnu_make=yes ;; # (
+        *) ovs_cv_gnu_make=no ;;
+      esac])
+   AM_CONDITIONAL([GNU_MAKE], [test $ovs_cv_gnu_make = yes])])
+m4trace:acinclude.m4:605: -1- AC_DEFUN([OVS_CHECK_SPARSE_TARGET], [AC_CACHE_CHECK(
+    [target hint for cgcc],
+    [ac_cv_sparse_target],
+    [AS_CASE([`$CC -dumpmachine 2>/dev/null`],
+       [i?86-* | athlon-*], [ac_cv_sparse_target=x86],
+       [x86_64-*], [ac_cv_sparse_target=x86_64],
+       [ac_cv_sparse_target=other])])
+   AS_CASE([$ac_cv_sparse_target],
+     [x86], [SPARSEFLAGS= CGCCFLAGS=-target=i86],
+     [x86_64], [SPARSEFLAGS=-m64 CGCCFLAGS=-target=x86_64],
+     [SPARSEFLAGS= CGCCFLAGS=])
+   AC_SUBST([SPARSEFLAGS])
+   AC_SUBST([CGCCFLAGS])])
+m4trace:acinclude.m4:626: -2- m4_pattern_allow([^SPARSE_EXTRA_INCLUDES$])
+m4trace:acinclude.m4:625: -1- AC_DEFUN([OVS_SPARSE_EXTRA_INCLUDES], [SPARSE_EXTRA_INCLUDES=`$CC -v -E - </dev/null 2>&1 >/dev/null | sed -n -e '/^#include.*search.*starts.*here:/,/^End.*of.*search.*list\./s/^ \(.*\)/-I \1/p' |grep -v /usr/lib | grep -x -v '\-I /usr/include' | tr \\\n ' ' ` 
+])
+m4trace:acinclude.m4:630: -1- AC_DEFUN([OVS_ENABLE_SPARSE], [AC_REQUIRE([OVS_CHECK_SPARSE_TARGET])
+   AC_REQUIRE([OVS_CHECK_MAKE_IF])
+   AC_REQUIRE([OVS_SPARSE_EXTRA_INCLUDES])
+   : ${SPARSE=sparse}
+   AC_SUBST([SPARSE])
+   AC_CONFIG_COMMANDS_PRE(
+     [if test $ovs_cv_gnu_make_if = yes; then
+        CC='$(if $(C),env REAL_CC="'"$CC"'" CHECK="$(SPARSE) -I $(top_srcdir)/include/sparse $(SPARSEFLAGS) $(SPARSE_EXTRA_INCLUDES) " cgcc $(CGCCFLAGS),'"$CC"')'
+      fi])])
+m4trace:acinclude.m4:659: -1- AC_DEFUN([OVS_CHECK_PTHREAD_SET_NAME], [AC_CHECK_FUNCS([pthread_set_name_np])
+   if test $ac_cv_func_pthread_set_name_np != yes; then
+     AC_CACHE_CHECK(
+       [for pthread_setname_np() variant],
+       [ovs_cv_pthread_setname_np],
+       [AC_LINK_IFELSE(
+         [AC_LANG_PROGRAM([#include <pthread.h>
+  ], [pthread_setname_np(pthread_self(), "name");])],
+         [ovs_cv_pthread_setname_np=glibc],
+         [AC_LINK_IFELSE(
+           [AC_LANG_PROGRAM([#include <pthread.h>
+], [pthread_setname_np(pthread_self(), "%s", "name");])],
+           [ovs_cv_pthread_setname_np=netbsd],
+           [ovs_cv_pthread_setname_np=none])])])
+     case $ovs_cv_pthread_setname_np in # (
+       glibc)
+          AC_DEFINE(
+            [HAVE_GLIBC_PTHREAD_SETNAME_NP], [1],
+            [Define to 1 if pthread_setname_np() is available and takes 2 parameters (like glibc).])
+          ;; # (
+       netbsd)
+          AC_DEFINE(
+            [HAVE_NETBSD_PTHREAD_SETNAME_NP], [1],
+            [Define to 1 if pthread_setname_np() is available and takes 3 parameters (like NetBSD).])
+          ;;
+     esac
+   fi])
+m4trace:acinclude.m4:693: -1- AC_DEFUN([OVS_CHECK_LINUX_HOST], [AC_CACHE_CHECK(
+     [whether __linux__ is defined],
+     [ovs_cv_linux],
+     [AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([enum { LINUX = __linux__};], [])],
+        [ovs_cv_linux=true],
+        [ovs_cv_linux=false])])
+   AM_CONDITIONAL([LINUX], [$ovs_cv_linux])])
+m4trace:configure.ac:16: -1- m4_pattern_forbid([^_?A[CHUM]_])
+m4trace:configure.ac:16: -1- m4_pattern_forbid([_AC_])
+m4trace:configure.ac:16: -1- m4_pattern_forbid([^LIBOBJS$], [do not use LIBOBJS directly, use AC_LIBOBJ (see section `AC_LIBOBJ vs LIBOBJS'])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^AS_FLAGS$])
+m4trace:configure.ac:16: -1- m4_pattern_forbid([^_?m4_])
+m4trace:configure.ac:16: -1- m4_pattern_forbid([^dnl$])
+m4trace:configure.ac:16: -1- m4_pattern_forbid([^_?AS_])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^SHELL$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PATH_SEPARATOR$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_NAME$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_VERSION$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_STRING$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_URL$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^exec_prefix$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^prefix$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^program_transform_name$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^bindir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^sbindir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^libexecdir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^datarootdir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^datadir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^sysconfdir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^sharedstatedir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^localstatedir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^includedir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^oldincludedir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^docdir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^infodir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^htmldir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^dvidir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^pdfdir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^psdir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^libdir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^localedir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^mandir$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_NAME$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_VERSION$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_STRING$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^PACKAGE_URL$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^DEFS$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^ECHO_C$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^ECHO_N$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^ECHO_T$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^build_alias$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^host_alias$])
+m4trace:configure.ac:16: -1- m4_pattern_allow([^target_alias$])
+m4trace:configure.ac:18: -1- AC_CONFIG_MACRO_DIR([m4])
+m4trace:configure.ac:22: -1- AM_INIT_AUTOMAKE
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AM_[A-Z]+FLAGS$])
+m4trace:configure.ac:22: -1- AM_SET_CURRENT_AUTOMAKE_VERSION
+m4trace:configure.ac:22: -1- AM_AUTOMAKE_VERSION([1.14.1])
+m4trace:configure.ac:22: -1- _AM_AUTOCONF_VERSION([2.69])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^INSTALL_PROGRAM$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^INSTALL_SCRIPT$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^INSTALL_DATA$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^am__isrc$])
+m4trace:configure.ac:22: -1- _AM_SUBST_NOTMAKE([am__isrc])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^CYGPATH_W$])
+m4trace:configure.ac:22: -1- _AM_SET_OPTIONS([])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^PACKAGE$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^VERSION$])
+m4trace:configure.ac:22: -1- _AM_IF_OPTION([no-define], [], [AC_DEFINE_UNQUOTED([PACKAGE], ["$PACKAGE"], [Name of package])
+ AC_DEFINE_UNQUOTED([VERSION], ["$VERSION"], [Version number of package])])
+m4trace:configure.ac:22: -2- _AM_MANGLE_OPTION([no-define])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^PACKAGE$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^VERSION$])
+m4trace:configure.ac:22: -1- AM_SANITY_CHECK
+m4trace:configure.ac:22: -1- AM_MISSING_PROG([ACLOCAL], [aclocal-${am__api_version}])
+m4trace:configure.ac:22: -1- AM_MISSING_HAS_RUN
+m4trace:configure.ac:22: -1- AM_AUX_DIR_EXPAND
+m4trace:configure.ac:22: -1- m4_pattern_allow([^ACLOCAL$])
+m4trace:configure.ac:22: -1- AM_MISSING_PROG([AUTOCONF], [autoconf])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AUTOCONF$])
+m4trace:configure.ac:22: -1- AM_MISSING_PROG([AUTOMAKE], [automake-${am__api_version}])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AUTOMAKE$])
+m4trace:configure.ac:22: -1- AM_MISSING_PROG([AUTOHEADER], [autoheader])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AUTOHEADER$])
+m4trace:configure.ac:22: -1- AM_MISSING_PROG([MAKEINFO], [makeinfo])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^MAKEINFO$])
+m4trace:configure.ac:22: -1- AM_PROG_INSTALL_SH
+m4trace:configure.ac:22: -1- m4_pattern_allow([^install_sh$])
+m4trace:configure.ac:22: -1- AM_PROG_INSTALL_STRIP
+m4trace:configure.ac:22: -1- m4_pattern_allow([^STRIP$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^INSTALL_STRIP_PROGRAM$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^MKDIR_P$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^mkdir_p$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AWK$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^SET_MAKE$])
+m4trace:configure.ac:22: -1- AM_SET_LEADING_DOT
+m4trace:configure.ac:22: -1- m4_pattern_allow([^am__leading_dot$])
+m4trace:configure.ac:22: -1- _AM_IF_OPTION([tar-ustar], [_AM_PROG_TAR([ustar])], [_AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])],
+			     [_AM_PROG_TAR([v7])])])
+m4trace:configure.ac:22: -2- _AM_MANGLE_OPTION([tar-ustar])
+m4trace:configure.ac:22: -1- _AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])], [_AM_PROG_TAR([v7])])
+m4trace:configure.ac:22: -2- _AM_MANGLE_OPTION([tar-pax])
+m4trace:configure.ac:22: -1- _AM_PROG_TAR([v7])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AMTAR$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^am__tar$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^am__untar$])
+m4trace:configure.ac:22: -1- _AM_IF_OPTION([no-dependencies], [], [AC_PROVIDE_IFELSE([AC_PROG_CC],
+		  [_AM_DEPENDENCIES([CC])],
+		  [m4_define([AC_PROG_CC],
+			     m4_defn([AC_PROG_CC])[_AM_DEPENDENCIES([CC])])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_CXX],
+		  [_AM_DEPENDENCIES([CXX])],
+		  [m4_define([AC_PROG_CXX],
+			     m4_defn([AC_PROG_CXX])[_AM_DEPENDENCIES([CXX])])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_OBJC],
+		  [_AM_DEPENDENCIES([OBJC])],
+		  [m4_define([AC_PROG_OBJC],
+			     m4_defn([AC_PROG_OBJC])[_AM_DEPENDENCIES([OBJC])])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_OBJCXX],
+		  [_AM_DEPENDENCIES([OBJCXX])],
+		  [m4_define([AC_PROG_OBJCXX],
+			     m4_defn([AC_PROG_OBJCXX])[_AM_DEPENDENCIES([OBJCXX])])])dnl
+])
+m4trace:configure.ac:22: -2- _AM_MANGLE_OPTION([no-dependencies])
+m4trace:configure.ac:22: -1- AM_SILENT_RULES
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AM_V$])
+m4trace:configure.ac:22: -1- AM_SUBST_NOTMAKE([AM_V])
+m4trace:configure.ac:22: -1- _AM_SUBST_NOTMAKE([AM_V])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AM_DEFAULT_V$])
+m4trace:configure.ac:22: -1- AM_SUBST_NOTMAKE([AM_DEFAULT_V])
+m4trace:configure.ac:22: -1- _AM_SUBST_NOTMAKE([AM_DEFAULT_V])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AM_DEFAULT_VERBOSITY$])
+m4trace:configure.ac:22: -1- m4_pattern_allow([^AM_BACKSLASH$])
+m4trace:configure.ac:22: -1- _AM_SUBST_NOTMAKE([AM_BACKSLASH])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^CFLAGS$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^LDFLAGS$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^ac_ct_CC$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^EXEEXT$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^OBJEXT$])
+m4trace:configure.ac:24: -1- _AM_PROG_CC_C_O
+m4trace:configure.ac:24: -1- AM_RUN_LOG([$CC -c conftest.$ac_ext -o conftest2.$ac_objext])
+m4trace:configure.ac:24: -1- _AM_DEPENDENCIES([CC])
+m4trace:configure.ac:24: -1- AM_SET_DEPDIR
+m4trace:configure.ac:24: -1- m4_pattern_allow([^DEPDIR$])
+m4trace:configure.ac:24: -1- AM_OUTPUT_DEPENDENCY_COMMANDS
+m4trace:configure.ac:24: -1- AM_MAKE_INCLUDE
+m4trace:configure.ac:24: -1- m4_pattern_allow([^am__include$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^am__quote$])
+m4trace:configure.ac:24: -1- AM_DEP_TRACK
+m4trace:configure.ac:24: -1- AM_CONDITIONAL([AMDEP], [test "x$enable_dependency_tracking" != xno])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^AMDEP_TRUE$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^AMDEP_FALSE$])
+m4trace:configure.ac:24: -1- _AM_SUBST_NOTMAKE([AMDEP_TRUE])
+m4trace:configure.ac:24: -1- _AM_SUBST_NOTMAKE([AMDEP_FALSE])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^AMDEPBACKSLASH$])
+m4trace:configure.ac:24: -1- _AM_SUBST_NOTMAKE([AMDEPBACKSLASH])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^am__nodep$])
+m4trace:configure.ac:24: -1- _AM_SUBST_NOTMAKE([am__nodep])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^CCDEPMODE$])
+m4trace:configure.ac:24: -1- AM_CONDITIONAL([am__fastdepCC], [
+  test "x$enable_dependency_tracking" != xno \
+  && test "$am_cv_CC_dependencies_compiler_type" = gcc3])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^am__fastdepCC_TRUE$])
+m4trace:configure.ac:24: -1- m4_pattern_allow([^am__fastdepCC_FALSE$])
+m4trace:configure.ac:24: -1- _AM_SUBST_NOTMAKE([am__fastdepCC_TRUE])
+m4trace:configure.ac:24: -1- _AM_SUBST_NOTMAKE([am__fastdepCC_FALSE])
+m4trace:configure.ac:25: -1- AM_PROG_CC_C_O
+m4trace:configure.ac:26: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:26: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:26: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:28: -1- m4_pattern_allow([^GREP$])
+m4trace:configure.ac:28: -1- m4_pattern_allow([^FGREP$])
+m4trace:configure.ac:29: -1- m4_pattern_allow([^EGREP$])
+m4trace:configure.ac:31: -1- m4_pattern_allow([^PERL$])
+m4trace:configure.ac:32: -1- m4_pattern_allow([^PERL$])
+m4trace:configure.ac:37: -1- AM_MISSING_PROG([AUTOM4TE], [autom4te])
+m4trace:configure.ac:37: -1- m4_pattern_allow([^AUTOM4TE$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^STDC_HEADERS$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^_POSIX_SOURCE$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^_POSIX_1_SOURCE$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^_MINIX$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^__EXTENSIONS__$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^_ALL_SOURCE$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^_GNU_SOURCE$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^_POSIX_PTHREAD_SEMANTICS$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^_TANDEM_SOURCE$])
+m4trace:configure.ac:40: -1- m4_pattern_allow([^WORDS_BIGENDIAN$])
+m4trace:configure.ac:40: -1- m4_pattern_allow([^AC_APPLE_UNIVERSAL_BUILD$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^_FILE_OFFSET_BITS$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^_LARGE_FILES$])
+m4trace:configure.ac:44: -1- m4_pattern_forbid([LT_INIT])
+m4trace:configure.ac:75: -1- m4_pattern_allow([^LT_CURRENT$])
+m4trace:configure.ac:77: -1- m4_pattern_allow([^LT_REVISION$])
+m4trace:configure.ac:79: -1- m4_pattern_allow([^LT_AGE$])
+m4trace:configure.ac:85: -1- m4_pattern_allow([^HAVE_DECL_STRERROR_R$])
+m4trace:configure.ac:85: -1- m4_pattern_allow([^HAVE_STRERROR_R$])
+m4trace:configure.ac:85: -1- m4_pattern_allow([^STRERROR_R_CHAR_P$])
+m4trace:configure.ac:87: -1- OVS_CHECK_ESX
+m4trace:configure.ac:87: -1- AM_CONDITIONAL([ESX], [test "$ESX" = yes])
+m4trace:configure.ac:87: -1- m4_pattern_allow([^ESX_TRUE$])
+m4trace:configure.ac:87: -1- m4_pattern_allow([^ESX_FALSE$])
+m4trace:configure.ac:87: -1- _AM_SUBST_NOTMAKE([ESX_TRUE])
+m4trace:configure.ac:87: -1- _AM_SUBST_NOTMAKE([ESX_FALSE])
+m4trace:configure.ac:87: -1- m4_pattern_allow([^ESX$])
+m4trace:configure.ac:88: -1- OVS_CHECK_WIN32
+m4trace:configure.ac:88: -1- AM_CONDITIONAL([WIN32], [test "$WIN32" = yes])
+m4trace:configure.ac:88: -1- m4_pattern_allow([^WIN32_TRUE$])
+m4trace:configure.ac:88: -1- m4_pattern_allow([^WIN32_FALSE$])
+m4trace:configure.ac:88: -1- _AM_SUBST_NOTMAKE([WIN32_TRUE])
+m4trace:configure.ac:88: -1- _AM_SUBST_NOTMAKE([WIN32_FALSE])
+m4trace:configure.ac:88: -1- m4_pattern_allow([^PTHREAD_INCLUDES$])
+m4trace:configure.ac:88: -1- m4_pattern_allow([^PTHREAD_LDFLAGS$])
+m4trace:configure.ac:88: -1- m4_pattern_allow([^PTHREAD_LIBS$])
+m4trace:configure.ac:88: -1- m4_pattern_allow([^MSVC_CFLAGS$])
+m4trace:configure.ac:88: -1- m4_pattern_allow([^MSVC_CFLAGS$])
+m4trace:configure.ac:88: -1- m4_pattern_allow([^WIN32$])
+m4trace:configure.ac:89: -1- OVS_CHECK_VISUAL_STUDIO_DDK
+m4trace:configure.ac:89: -1- m4_pattern_allow([^VSTUDIO_CONFIG$])
+m4trace:configure.ac:89: -1- m4_pattern_allow([^VSTUDIO_DDK$])
+m4trace:configure.ac:89: -1- AM_CONDITIONAL([VSTUDIO_DDK], [test -n "$VSTUDIO_CONFIG"])
+m4trace:configure.ac:89: -1- m4_pattern_allow([^VSTUDIO_DDK_TRUE$])
+m4trace:configure.ac:89: -1- m4_pattern_allow([^VSTUDIO_DDK_FALSE$])
+m4trace:configure.ac:89: -1- _AM_SUBST_NOTMAKE([VSTUDIO_DDK_TRUE])
+m4trace:configure.ac:89: -1- _AM_SUBST_NOTMAKE([VSTUDIO_DDK_FALSE])
+m4trace:configure.ac:90: -1- OVS_CHECK_COVERAGE
+m4trace:configure.ac:90: -1- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+../../lib/autoconf/general.m4:1462: AC_ARG_ENABLE is expanded from...
+m4/openvswitch.m4:20: OVS_CHECK_COVERAGE is expanded from...
+configure.ac:90: the top level])
+m4trace:configure.ac:91: -1- OVS_CHECK_NDEBUG
+m4trace:configure.ac:91: -1- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+../../lib/autoconf/general.m4:1462: AC_ARG_ENABLE is expanded from...
+m4/openvswitch.m4:50: OVS_CHECK_NDEBUG is expanded from...
+configure.ac:91: the top level])
+m4trace:configure.ac:91: -1- AM_CONDITIONAL([NDEBUG], [test x$ndebug = xtrue])
+m4trace:configure.ac:91: -1- m4_pattern_allow([^NDEBUG_TRUE$])
+m4trace:configure.ac:91: -1- m4_pattern_allow([^NDEBUG_FALSE$])
+m4trace:configure.ac:91: -1- _AM_SUBST_NOTMAKE([NDEBUG_TRUE])
+m4trace:configure.ac:91: -1- _AM_SUBST_NOTMAKE([NDEBUG_FALSE])
+m4trace:configure.ac:92: -1- OVS_CHECK_NETLINK
+m4trace:configure.ac:92: -1- AM_CONDITIONAL([HAVE_NETLINK], [test "$HAVE_NETLINK" = yes])
+m4trace:configure.ac:92: -1- m4_pattern_allow([^HAVE_NETLINK_TRUE$])
+m4trace:configure.ac:92: -1- m4_pattern_allow([^HAVE_NETLINK_FALSE$])
+m4trace:configure.ac:92: -1- _AM_SUBST_NOTMAKE([HAVE_NETLINK_TRUE])
+m4trace:configure.ac:92: -1- _AM_SUBST_NOTMAKE([HAVE_NETLINK_FALSE])
+m4trace:configure.ac:92: -1- m4_pattern_allow([^HAVE_NETLINK$])
+m4trace:configure.ac:93: -1- OVS_CHECK_OPENSSL
+m4trace:configure.ac:93: -1- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+../../lib/autoconf/general.m4:1462: AC_ARG_ENABLE is expanded from...
+m4/openvswitch.m4:160: OVS_CHECK_OPENSSL is expanded from...
+configure.ac:93: the top level])
+m4trace:configure.ac:93: -1- AX_CHECK_OPENSSL([HAVE_OPENSSL=yes], [HAVE_OPENSSL=no
+          if test "$ssl" = check; then
+            AC_MSG_WARN([Cannot find openssl:
+
+$SSL_PKG_ERRORS
+
+OpenFlow connections over SSL will not be supported.
+(You may use --disable-ssl to suppress this warning.)])
+          else
+            AC_MSG_ERROR([Cannot find openssl (use --disable-ssl to configure without SSL support)])
+          fi])
+m4trace:configure.ac:93: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:93: -1- m4_pattern_allow([^SSL_INCLUDES$])
+m4trace:configure.ac:93: -1- m4_pattern_allow([^SSL_LIBS$])
+m4trace:configure.ac:93: -1- m4_pattern_allow([^SSL_LDFLAGS$])
+m4trace:configure.ac:93: -1- m4_pattern_allow([^HAVE_OPENSSL$])
+m4trace:configure.ac:93: -1- AM_CONDITIONAL([HAVE_OPENSSL], [test "$HAVE_OPENSSL" = yes])
+m4trace:configure.ac:93: -1- m4_pattern_allow([^HAVE_OPENSSL_TRUE$])
+m4trace:configure.ac:93: -1- m4_pattern_allow([^HAVE_OPENSSL_FALSE$])
+m4trace:configure.ac:93: -1- _AM_SUBST_NOTMAKE([HAVE_OPENSSL_TRUE])
+m4trace:configure.ac:93: -1- _AM_SUBST_NOTMAKE([HAVE_OPENSSL_FALSE])
+m4trace:configure.ac:93: -1- m4_pattern_allow([^HAVE_OPENSSL$])
+m4trace:configure.ac:94: -1- OVS_CHECK_LOGDIR
+m4trace:configure.ac:94: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+m4/openvswitch.m4:221: OVS_CHECK_LOGDIR is expanded from...
+configure.ac:94: the top level])
+m4trace:configure.ac:94: -1- m4_pattern_allow([^LOGDIR$])
+m4trace:configure.ac:95: -1- OVS_CHECK_PYTHON
+m4trace:configure.ac:95: -1- m4_pattern_allow([^HAVE_PYTHON$])
+m4trace:configure.ac:95: -1- AM_MISSING_PROG([PYTHON], [python])
+m4trace:configure.ac:95: -1- m4_pattern_allow([^PYTHON$])
+m4trace:configure.ac:95: -1- AM_CONDITIONAL([HAVE_PYTHON], [test "$HAVE_PYTHON" = yes])
+m4trace:configure.ac:95: -1- m4_pattern_allow([^HAVE_PYTHON_TRUE$])
+m4trace:configure.ac:95: -1- m4_pattern_allow([^HAVE_PYTHON_FALSE$])
+m4trace:configure.ac:95: -1- _AM_SUBST_NOTMAKE([HAVE_PYTHON_TRUE])
+m4trace:configure.ac:95: -1- _AM_SUBST_NOTMAKE([HAVE_PYTHON_FALSE])
+m4trace:configure.ac:96: -1- OVS_CHECK_PYTHON_COMPAT
+m4trace:configure.ac:96: -1- OVS_CHECK_PYTHON_MODULE([uuid])
+m4trace:configure.ac:96: -1- AM_CONDITIONAL([INCLUDE_PYTHON_COMPAT], [test $INCLUDE_PYTHON_COMPAT = yes])
+m4trace:configure.ac:96: -1- m4_pattern_allow([^INCLUDE_PYTHON_COMPAT_TRUE$])
+m4trace:configure.ac:96: -1- m4_pattern_allow([^INCLUDE_PYTHON_COMPAT_FALSE$])
+m4trace:configure.ac:96: -1- _AM_SUBST_NOTMAKE([INCLUDE_PYTHON_COMPAT_TRUE])
+m4trace:configure.ac:96: -1- _AM_SUBST_NOTMAKE([INCLUDE_PYTHON_COMPAT_FALSE])
+m4trace:configure.ac:97: -1- OVS_CHECK_DOT
+m4trace:configure.ac:97: -1- AM_CONDITIONAL([HAVE_DOT], [test "$ovs_cv_dot" = yes])
+m4trace:configure.ac:97: -1- m4_pattern_allow([^HAVE_DOT_TRUE$])
+m4trace:configure.ac:97: -1- m4_pattern_allow([^HAVE_DOT_FALSE$])
+m4trace:configure.ac:97: -1- _AM_SUBST_NOTMAKE([HAVE_DOT_TRUE])
+m4trace:configure.ac:97: -1- _AM_SUBST_NOTMAKE([HAVE_DOT_FALSE])
+m4trace:configure.ac:98: -1- OVS_CHECK_IF_PACKET
+m4trace:configure.ac:98: -1- AM_CONDITIONAL([HAVE_IF_PACKET], [test "$HAVE_IF_PACKET" = yes])
+m4trace:configure.ac:98: -1- m4_pattern_allow([^HAVE_IF_PACKET_TRUE$])
+m4trace:configure.ac:98: -1- m4_pattern_allow([^HAVE_IF_PACKET_FALSE$])
+m4trace:configure.ac:98: -1- _AM_SUBST_NOTMAKE([HAVE_IF_PACKET_TRUE])
+m4trace:configure.ac:98: -1- _AM_SUBST_NOTMAKE([HAVE_IF_PACKET_FALSE])
+m4trace:configure.ac:98: -1- m4_pattern_allow([^HAVE_IF_PACKET$])
+m4trace:configure.ac:99: -1- OVS_CHECK_IF_DL
+m4trace:configure.ac:99: -1- AM_CONDITIONAL([HAVE_IF_DL], [test "$HAVE_IF_DL" = yes])
+m4trace:configure.ac:99: -1- m4_pattern_allow([^HAVE_IF_DL_TRUE$])
+m4trace:configure.ac:99: -1- m4_pattern_allow([^HAVE_IF_DL_FALSE$])
+m4trace:configure.ac:99: -1- _AM_SUBST_NOTMAKE([HAVE_IF_DL_TRUE])
+m4trace:configure.ac:99: -1- _AM_SUBST_NOTMAKE([HAVE_IF_DL_FALSE])
+m4trace:configure.ac:99: -1- m4_pattern_allow([^HAVE_IF_DL$])
+m4trace:configure.ac:100: -1- OVS_CHECK_STRTOK_R
+m4trace:configure.ac:100: -1- m4_pattern_allow([^HAVE_STRTOK_R_BUG$])
+m4trace:configure.ac:101: -1- m4_pattern_allow([^HAVE_DECL_SYS_SIGLIST$])
+m4trace:configure.ac:102: -1- m4_pattern_allow([^HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC$])
+m4trace:configure.ac:102: -1- m4_pattern_allow([^HAVE_STRUCT_STAT_ST_MTIMENSEC$])
+m4trace:configure.ac:104: -1- m4_pattern_allow([^HAVE_STRUCT_IFREQ_IFR_FLAGSHIGH$])
+m4trace:configure.ac:107: -1- m4_pattern_allow([^HAVE_NET_IF_MIB_H$])
+m4trace:configure.ac:110: -1- OVS_CHECK_PKIDIR
+m4trace:configure.ac:110: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+m4/openvswitch.m4:200: OVS_CHECK_PKIDIR is expanded from...
+configure.ac:110: the top level])
+m4trace:configure.ac:110: -1- m4_pattern_allow([^PKIDIR$])
+m4trace:configure.ac:111: -1- OVS_CHECK_RUNDIR
+m4trace:configure.ac:111: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+m4/openvswitch.m4:210: OVS_CHECK_RUNDIR is expanded from...
+configure.ac:111: the top level])
+m4trace:configure.ac:111: -1- m4_pattern_allow([^RUNDIR$])
+m4trace:configure.ac:112: -1- OVS_CHECK_DBDIR
+m4trace:configure.ac:112: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+m4/openvswitch.m4:231: OVS_CHECK_DBDIR is expanded from...
+configure.ac:112: the top level])
+m4trace:configure.ac:112: -1- m4_pattern_allow([^DBDIR$])
+m4trace:configure.ac:113: -1- OVS_CHECK_BACKTRACE
+m4trace:configure.ac:113: -1- m4_pattern_allow([^HAVE_BACKTRACE$])
+m4trace:configure.ac:114: -1- OVS_CHECK_VALGRIND
+m4trace:configure.ac:114: -1- m4_pattern_allow([^HAVE_VALGRIND_VALGRIND_H$])
+m4trace:configure.ac:115: -1- OVS_CHECK_SOCKET_LIBS
+m4trace:configure.ac:115: -1- m4_pattern_allow([^HAVE_LIBSOCKET$])
+m4trace:configure.ac:116: -1- OVS_CHECK_XENSERVER_VERSION
+m4trace:configure.ac:117: -1- OVS_CHECK_GROFF
+m4trace:configure.ac:117: -1- AM_CONDITIONAL([HAVE_GROFF], [test "$ovs_cv_groff" = yes])
+m4trace:configure.ac:117: -1- m4_pattern_allow([^HAVE_GROFF_TRUE$])
+m4trace:configure.ac:117: -1- m4_pattern_allow([^HAVE_GROFF_FALSE$])
+m4trace:configure.ac:117: -1- _AM_SUBST_NOTMAKE([HAVE_GROFF_TRUE])
+m4trace:configure.ac:117: -1- _AM_SUBST_NOTMAKE([HAVE_GROFF_FALSE])
+m4trace:configure.ac:118: -1- OVS_CHECK_GNU_MAKE
+m4trace:configure.ac:118: -1- AM_CONDITIONAL([GNU_MAKE], [test $ovs_cv_gnu_make = yes])
+m4trace:configure.ac:118: -1- m4_pattern_allow([^GNU_MAKE_TRUE$])
+m4trace:configure.ac:118: -1- m4_pattern_allow([^GNU_MAKE_FALSE$])
+m4trace:configure.ac:118: -1- _AM_SUBST_NOTMAKE([GNU_MAKE_TRUE])
+m4trace:configure.ac:118: -1- _AM_SUBST_NOTMAKE([GNU_MAKE_FALSE])
+m4trace:configure.ac:119: -1- OVS_CHECK_TLS
+m4trace:configure.ac:119: -1- m4_pattern_allow([^HAVE_THREAD_LOCAL$])
+m4trace:configure.ac:119: -1- m4_pattern_allow([^HAVE___THREAD$])
+m4trace:configure.ac:120: -1- OVS_CHECK_ATOMIC_LIBS
+m4trace:configure.ac:121: -1- OVS_CHECK_GCC4_ATOMICS
+m4trace:configure.ac:121: -1- m4_pattern_allow([^HAVE_GCC4_ATOMICS$])
+m4trace:configure.ac:122: -1- OVS_CHECK_ATOMIC_ALWAYS_LOCK_FREE([1])
+m4trace:configure.ac:122: -1- AC_COMPUTE_INT([ovs_cv_atomic_always_lock_free_1], [__atomic_always_lock_free(1, 0)], [], [ovs_cv_atomic_always_lock_free_1=unsupported])
+m4trace:configure.ac:122: -1- m4_pattern_allow([^ATOMIC_ALWAYS_LOCK_FREE_1B$])
+m4trace:configure.ac:123: -1- OVS_CHECK_ATOMIC_ALWAYS_LOCK_FREE([2])
+m4trace:configure.ac:123: -1- AC_COMPUTE_INT([ovs_cv_atomic_always_lock_free_2], [__atomic_always_lock_free(2, 0)], [], [ovs_cv_atomic_always_lock_free_2=unsupported])
+m4trace:configure.ac:123: -1- m4_pattern_allow([^ATOMIC_ALWAYS_LOCK_FREE_2B$])
+m4trace:configure.ac:124: -1- OVS_CHECK_ATOMIC_ALWAYS_LOCK_FREE([4])
+m4trace:configure.ac:124: -1- AC_COMPUTE_INT([ovs_cv_atomic_always_lock_free_4], [__atomic_always_lock_free(4, 0)], [], [ovs_cv_atomic_always_lock_free_4=unsupported])
+m4trace:configure.ac:124: -1- m4_pattern_allow([^ATOMIC_ALWAYS_LOCK_FREE_4B$])
+m4trace:configure.ac:125: -1- OVS_CHECK_ATOMIC_ALWAYS_LOCK_FREE([8])
+m4trace:configure.ac:125: -1- AC_COMPUTE_INT([ovs_cv_atomic_always_lock_free_8], [__atomic_always_lock_free(8, 0)], [], [ovs_cv_atomic_always_lock_free_8=unsupported])
+m4trace:configure.ac:125: -1- m4_pattern_allow([^ATOMIC_ALWAYS_LOCK_FREE_8B$])
+m4trace:configure.ac:126: -1- OVS_CHECK_POSIX_AIO
+m4trace:configure.ac:126: -1- AM_CONDITIONAL([HAVE_POSIX_AIO], [test "$ac_cv_search_aio_write" != no])
+m4trace:configure.ac:126: -1- m4_pattern_allow([^HAVE_POSIX_AIO_TRUE$])
+m4trace:configure.ac:126: -1- m4_pattern_allow([^HAVE_POSIX_AIO_FALSE$])
+m4trace:configure.ac:126: -1- _AM_SUBST_NOTMAKE([HAVE_POSIX_AIO_TRUE])
+m4trace:configure.ac:126: -1- _AM_SUBST_NOTMAKE([HAVE_POSIX_AIO_FALSE])
+m4trace:configure.ac:127: -1- OVS_CHECK_PTHREAD_SET_NAME
+m4trace:configure.ac:127: -1- m4_pattern_allow([^HAVE_PTHREAD_SET_NAME_NP$])
+m4trace:configure.ac:127: -1- m4_pattern_allow([^HAVE_GLIBC_PTHREAD_SETNAME_NP$])
+m4trace:configure.ac:127: -1- m4_pattern_allow([^HAVE_NETBSD_PTHREAD_SETNAME_NP$])
+m4trace:configure.ac:128: -1- OVS_CHECK_LINUX_HOST
+m4trace:configure.ac:128: -1- AM_CONDITIONAL([LINUX], [$ovs_cv_linux])
+m4trace:configure.ac:128: -1- m4_pattern_allow([^LINUX_TRUE$])
+m4trace:configure.ac:128: -1- m4_pattern_allow([^LINUX_FALSE$])
+m4trace:configure.ac:128: -1- _AM_SUBST_NOTMAKE([LINUX_TRUE])
+m4trace:configure.ac:128: -1- _AM_SUBST_NOTMAKE([LINUX_FALSE])
+m4trace:configure.ac:129: -1- AX_FUNC_POSIX_MEMALIGN
+m4trace:configure.ac:129: -1- _m4_warn([obsolete], [The macro `AC_TRY_RUN' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:2764: AC_TRY_RUN is expanded from...
+../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
+../../lib/autoconf/general.m4:2031: AC_CACHE_VAL is expanded from...
+../../lib/autoconf/general.m4:2052: AC_CACHE_CHECK is expanded from...
+m4/ax_func_posix_memalign.m4:27: AX_FUNC_POSIX_MEMALIGN is expanded from...
+configure.ac:129: the top level])
+m4trace:configure.ac:129: -1- m4_pattern_allow([^HAVE_POSIX_MEMALIGN$])
+m4trace:configure.ac:131: -1- OVS_CHECK_INCLUDE_NEXT([stdio.h string.h])
+m4trace:configure.ac:131: -1- gl_CHECK_NEXT_HEADERS
+m4trace:configure.ac:131: -1- gl_NEXT_HEADERS_INTERNAL([], [check])
+m4trace:configure.ac:131: -1- gl_INCLUDE_NEXT
+m4trace:configure.ac:131: -1- m4_pattern_allow([^INCLUDE_NEXT$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^INCLUDE_NEXT_AS_FIRST_DIRECTIVE$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^PRAGMA_SYSTEM_HEADER$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^PRAGMA_COLUMNS$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^build$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^build_cpu$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^build_vendor$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^build_os$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^host$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^host_cpu$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^host_vendor$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^host_os$])
+m4trace:configure.ac:131: -1- gl_CHECK_NEXT_HEADERS([stdio.h string.h])
+m4trace:configure.ac:131: -1- gl_NEXT_HEADERS_INTERNAL([stdio.h string.h], [check])
+m4trace:configure.ac:131: -1- AC_DEFUN([_AC_Header_stdio_h], [m4_divert_text([INIT_PREPARE], [AS_VAR_APPEND([ac_header_list], [" stdio.h"])])
+_AC_HEADERS_EXPANSION])
+m4trace:configure.ac:131: -1- AC_DEFUN([_AC_Header_string_h], [m4_divert_text([INIT_PREPARE], [AS_VAR_APPEND([ac_header_list], [" string.h"])])
+_AC_HEADERS_EXPANSION])
+m4trace:configure.ac:131: -1- gl_ABSOLUTE_HEADER_ONE([stdio.h])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^NEXT_STDIO_H$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^NEXT_AS_FIRST_DIRECTIVE_STDIO_H$])
+m4trace:configure.ac:131: -1- gl_ABSOLUTE_HEADER_ONE([string.h])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^NEXT_STRING_H$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^NEXT_AS_FIRST_DIRECTIVE_STRING_H$])
+m4trace:configure.ac:140: -1- OVS_ENABLE_OPTION([-Wall])
+m4trace:configure.ac:140: -1- OVS_CHECK_CC_OPTION([-Wall], [WARNING_FLAGS="$WARNING_FLAGS -Wall"])
+m4trace:configure.ac:140: -1- OVS_CHECK_WERROR
+m4trace:configure.ac:140: -1- _OVS_CHECK_CC_OPTION([-Werror], [WERROR=-Werror])
+m4trace:configure.ac:140: -1- _OVS_CHECK_CC_OPTION([-Wall], [WARNING_FLAGS="$WARNING_FLAGS -Wall"], [])
+m4trace:configure.ac:140: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:141: -1- OVS_ENABLE_OPTION([-Wextra])
+m4trace:configure.ac:141: -1- OVS_CHECK_CC_OPTION([-Wextra], [WARNING_FLAGS="$WARNING_FLAGS -Wextra"])
+m4trace:configure.ac:141: -1- _OVS_CHECK_CC_OPTION([-Wextra], [WARNING_FLAGS="$WARNING_FLAGS -Wextra"], [])
+m4trace:configure.ac:141: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:142: -1- OVS_ENABLE_OPTION([-Wno-sign-compare])
+m4trace:configure.ac:142: -1- OVS_CHECK_CC_OPTION([-Wno-sign-compare], [WARNING_FLAGS="$WARNING_FLAGS -Wno-sign-compare"])
+m4trace:configure.ac:142: -1- _OVS_CHECK_CC_OPTION([-Wno-sign-compare], [WARNING_FLAGS="$WARNING_FLAGS -Wno-sign-compare"], [])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:143: -1- OVS_ENABLE_OPTION([-Wpointer-arith])
+m4trace:configure.ac:143: -1- OVS_CHECK_CC_OPTION([-Wpointer-arith], [WARNING_FLAGS="$WARNING_FLAGS -Wpointer-arith"])
+m4trace:configure.ac:143: -1- _OVS_CHECK_CC_OPTION([-Wpointer-arith], [WARNING_FLAGS="$WARNING_FLAGS -Wpointer-arith"], [])
+m4trace:configure.ac:143: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:144: -1- OVS_ENABLE_OPTION([-Wformat-security])
+m4trace:configure.ac:144: -1- OVS_CHECK_CC_OPTION([-Wformat-security], [WARNING_FLAGS="$WARNING_FLAGS -Wformat-security"])
+m4trace:configure.ac:144: -1- _OVS_CHECK_CC_OPTION([-Wformat-security], [WARNING_FLAGS="$WARNING_FLAGS -Wformat-security"], [])
+m4trace:configure.ac:144: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:145: -1- OVS_ENABLE_OPTION([-Wno-format-zero-length])
+m4trace:configure.ac:145: -1- OVS_CHECK_CC_OPTION([-Wno-format-zero-length], [WARNING_FLAGS="$WARNING_FLAGS -Wno-format-zero-length"])
+m4trace:configure.ac:145: -1- _OVS_CHECK_CC_OPTION([-Wno-format-zero-length], [WARNING_FLAGS="$WARNING_FLAGS -Wno-format-zero-length"], [])
+m4trace:configure.ac:145: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:146: -1- OVS_ENABLE_OPTION([-Wswitch-enum])
+m4trace:configure.ac:146: -1- OVS_CHECK_CC_OPTION([-Wswitch-enum], [WARNING_FLAGS="$WARNING_FLAGS -Wswitch-enum"])
+m4trace:configure.ac:146: -1- _OVS_CHECK_CC_OPTION([-Wswitch-enum], [WARNING_FLAGS="$WARNING_FLAGS -Wswitch-enum"], [])
+m4trace:configure.ac:146: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:147: -1- OVS_ENABLE_OPTION([-Wunused-parameter])
+m4trace:configure.ac:147: -1- OVS_CHECK_CC_OPTION([-Wunused-parameter], [WARNING_FLAGS="$WARNING_FLAGS -Wunused-parameter"])
+m4trace:configure.ac:147: -1- _OVS_CHECK_CC_OPTION([-Wunused-parameter], [WARNING_FLAGS="$WARNING_FLAGS -Wunused-parameter"], [])
+m4trace:configure.ac:147: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:148: -1- OVS_ENABLE_OPTION([-Wbad-function-cast])
+m4trace:configure.ac:148: -1- OVS_CHECK_CC_OPTION([-Wbad-function-cast], [WARNING_FLAGS="$WARNING_FLAGS -Wbad-function-cast"])
+m4trace:configure.ac:148: -1- _OVS_CHECK_CC_OPTION([-Wbad-function-cast], [WARNING_FLAGS="$WARNING_FLAGS -Wbad-function-cast"], [])
+m4trace:configure.ac:148: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:149: -1- OVS_ENABLE_OPTION([-Wcast-align])
+m4trace:configure.ac:149: -1- OVS_CHECK_CC_OPTION([-Wcast-align], [WARNING_FLAGS="$WARNING_FLAGS -Wcast-align"])
+m4trace:configure.ac:149: -1- _OVS_CHECK_CC_OPTION([-Wcast-align], [WARNING_FLAGS="$WARNING_FLAGS -Wcast-align"], [])
+m4trace:configure.ac:149: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:150: -1- OVS_ENABLE_OPTION([-Wstrict-prototypes])
+m4trace:configure.ac:150: -1- OVS_CHECK_CC_OPTION([-Wstrict-prototypes], [WARNING_FLAGS="$WARNING_FLAGS -Wstrict-prototypes"])
+m4trace:configure.ac:150: -1- _OVS_CHECK_CC_OPTION([-Wstrict-prototypes], [WARNING_FLAGS="$WARNING_FLAGS -Wstrict-prototypes"], [])
+m4trace:configure.ac:150: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:151: -1- OVS_ENABLE_OPTION([-Wold-style-definition])
+m4trace:configure.ac:151: -1- OVS_CHECK_CC_OPTION([-Wold-style-definition], [WARNING_FLAGS="$WARNING_FLAGS -Wold-style-definition"])
+m4trace:configure.ac:151: -1- _OVS_CHECK_CC_OPTION([-Wold-style-definition], [WARNING_FLAGS="$WARNING_FLAGS -Wold-style-definition"], [])
+m4trace:configure.ac:151: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:152: -1- OVS_ENABLE_OPTION([-Wmissing-prototypes])
+m4trace:configure.ac:152: -1- OVS_CHECK_CC_OPTION([-Wmissing-prototypes], [WARNING_FLAGS="$WARNING_FLAGS -Wmissing-prototypes"])
+m4trace:configure.ac:152: -1- _OVS_CHECK_CC_OPTION([-Wmissing-prototypes], [WARNING_FLAGS="$WARNING_FLAGS -Wmissing-prototypes"], [])
+m4trace:configure.ac:152: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:153: -1- OVS_ENABLE_OPTION([-Wmissing-field-initializers])
+m4trace:configure.ac:153: -1- OVS_CHECK_CC_OPTION([-Wmissing-field-initializers], [WARNING_FLAGS="$WARNING_FLAGS -Wmissing-field-initializers"])
+m4trace:configure.ac:153: -1- _OVS_CHECK_CC_OPTION([-Wmissing-field-initializers], [WARNING_FLAGS="$WARNING_FLAGS -Wmissing-field-initializers"], [])
+m4trace:configure.ac:153: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:154: -1- OVS_ENABLE_OPTION([-Wthread-safety])
+m4trace:configure.ac:154: -1- OVS_CHECK_CC_OPTION([-Wthread-safety], [WARNING_FLAGS="$WARNING_FLAGS -Wthread-safety"])
+m4trace:configure.ac:154: -1- _OVS_CHECK_CC_OPTION([-Wthread-safety], [WARNING_FLAGS="$WARNING_FLAGS -Wthread-safety"], [])
+m4trace:configure.ac:154: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:155: -1- OVS_ENABLE_OPTION([-fno-strict-aliasing])
+m4trace:configure.ac:155: -1- OVS_CHECK_CC_OPTION([-fno-strict-aliasing], [WARNING_FLAGS="$WARNING_FLAGS -fno-strict-aliasing"])
+m4trace:configure.ac:155: -1- _OVS_CHECK_CC_OPTION([-fno-strict-aliasing], [WARNING_FLAGS="$WARNING_FLAGS -fno-strict-aliasing"], [])
+m4trace:configure.ac:155: -1- m4_pattern_allow([^WARNING_FLAGS$])
+m4trace:configure.ac:156: -1- OVS_CONDITIONAL_CC_OPTION([-Wno-unused], [HAVE_WNO_UNUSED])
+m4trace:configure.ac:156: -1- OVS_CHECK_CC_OPTION([-Wno-unused], [ovs_have_cc_option=yes], [ovs_have_cc_option=no])
+m4trace:configure.ac:156: -1- _OVS_CHECK_CC_OPTION([-Wno-unused], [ovs_have_cc_option=yes], [ovs_have_cc_option=no])
+m4trace:configure.ac:156: -1- AM_CONDITIONAL([HAVE_WNO_UNUSED], [test $ovs_have_cc_option = yes])
+m4trace:configure.ac:156: -1- m4_pattern_allow([^HAVE_WNO_UNUSED_TRUE$])
+m4trace:configure.ac:156: -1- m4_pattern_allow([^HAVE_WNO_UNUSED_FALSE$])
+m4trace:configure.ac:156: -1- _AM_SUBST_NOTMAKE([HAVE_WNO_UNUSED_TRUE])
+m4trace:configure.ac:156: -1- _AM_SUBST_NOTMAKE([HAVE_WNO_UNUSED_FALSE])
+m4trace:configure.ac:157: -1- OVS_CONDITIONAL_CC_OPTION([-Wno-unused-parameter], [HAVE_WNO_UNUSED_PARAMETER])
+m4trace:configure.ac:157: -1- OVS_CHECK_CC_OPTION([-Wno-unused-parameter], [ovs_have_cc_option=yes], [ovs_have_cc_option=no])
+m4trace:configure.ac:157: -1- _OVS_CHECK_CC_OPTION([-Wno-unused-parameter], [ovs_have_cc_option=yes], [ovs_have_cc_option=no])
+m4trace:configure.ac:157: -1- AM_CONDITIONAL([HAVE_WNO_UNUSED_PARAMETER], [test $ovs_have_cc_option = yes])
+m4trace:configure.ac:157: -1- m4_pattern_allow([^HAVE_WNO_UNUSED_PARAMETER_TRUE$])
+m4trace:configure.ac:157: -1- m4_pattern_allow([^HAVE_WNO_UNUSED_PARAMETER_FALSE$])
+m4trace:configure.ac:157: -1- _AM_SUBST_NOTMAKE([HAVE_WNO_UNUSED_PARAMETER_TRUE])
+m4trace:configure.ac:157: -1- _AM_SUBST_NOTMAKE([HAVE_WNO_UNUSED_PARAMETER_FALSE])
+m4trace:configure.ac:158: -1- OVS_ENABLE_WERROR
+m4trace:configure.ac:158: -1- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+../../lib/autoconf/general.m4:1462: AC_ARG_ENABLE is expanded from...
+acinclude.m4:18: OVS_ENABLE_WERROR is expanded from...
+configure.ac:158: the top level])
+m4trace:configure.ac:159: -1- OVS_ENABLE_SPARSE
+m4trace:configure.ac:159: -1- OVS_CHECK_SPARSE_TARGET
+m4trace:configure.ac:159: -1- m4_pattern_allow([^SPARSEFLAGS$])
+m4trace:configure.ac:159: -1- m4_pattern_allow([^CGCCFLAGS$])
+m4trace:configure.ac:159: -1- OVS_CHECK_MAKE_IF
+m4trace:configure.ac:159: -1- OVS_SPARSE_EXTRA_INCLUDES
+m4trace:configure.ac:159: -1- m4_pattern_allow([^SPARSE$])
+m4trace:configure.ac:161: -1- m4_pattern_allow([^KARCH$])
+m4trace:configure.ac:162: -1- m4_pattern_allow([^KARCH$])
+m4trace:configure.ac:163: -1- OVS_CHECK_LINUX
+m4trace:configure.ac:163: -1- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+../../lib/autoconf/general.m4:1481: AC_ARG_WITH is expanded from...
+acinclude.m4:31: OVS_CHECK_LINUX is expanded from...
+configure.ac:163: the top level])
+m4trace:configure.ac:163: -1- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+../../lib/autoconf/general.m4:1481: AC_ARG_WITH is expanded from...
+acinclude.m4:31: OVS_CHECK_LINUX is expanded from...
+configure.ac:163: the top level])
+m4trace:configure.ac:163: -1- m4_pattern_allow([^KBUILD$])
+m4trace:configure.ac:163: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
+acinclude.m4:31: OVS_CHECK_LINUX is expanded from...
+configure.ac:163: the top level])
+m4trace:configure.ac:163: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
+acinclude.m4:31: OVS_CHECK_LINUX is expanded from...
+configure.ac:163: the top level])
+m4trace:configure.ac:163: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
+acinclude.m4:31: OVS_CHECK_LINUX is expanded from...
+configure.ac:163: the top level])
+m4trace:configure.ac:163: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
+acinclude.m4:31: OVS_CHECK_LINUX is expanded from...
+configure.ac:163: the top level])
+m4trace:configure.ac:163: -1- OVS_CHECK_LINUX_COMPAT
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/arch/x86/include/asm/checksum_32.h], [src_err,], [OVS_DEFINE([HAVE_CSUM_COPY_DBG])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_CSUM_COPY_DBG])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/err.h], [ERR_CAST])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_ERR_CAST])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/err.h], [IS_ERR_OR_NULL])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_IS_ERR_OR_NULL])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/etherdevice.h], [eth_hw_addr_random])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_ETH_HW_ADDR_RANDOM])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/etherdevice.h], [ether_addr_copy])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_ETHER_ADDR_COPY])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/if_vlan.h], [vlan_set_encap_proto])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_VLAN_SET_ENCAP_PROTO])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/in.h], [ipv4_is_multicast])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_IPV4_IS_MULTICAST])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/ip.h], [__ip_select_ident.*dst_entry], [OVS_DEFINE([HAVE_IP_SELECT_IDENT_USING_DST_ENTRY])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_IP_SELECT_IDENT_USING_DST_ENTRY])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [dev_disable_lro])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_DEV_DISABLE_LRO])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [dev_get_stats])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_DEV_GET_STATS])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [dev_get_by_index_rcu])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_DEV_GET_BY_INDEX_RCU])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [__skb_gso_segment])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE___SKB_GSO_SEGMENT])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [can_checksum_protocol])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_CAN_CHECKSUM_PROTOCOL])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [netdev_features_t])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_NETDEV_FEATURES_T])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/netdevice.h], [pcpu_sw_netstats])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_PCPU_SW_NETSTATS])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/random.h], [prandom_u32])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_PRANDOM_U32])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/rcupdate.h], [rcu_read_lock_held], [], [OVS_GREP_IFELSE([$KSRC/include/linux/rtnetlink.h],
+                                   [rcu_read_lock_held])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_RCU_READ_LOCK_HELD])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/rtnetlink.h], [rcu_read_lock_held])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_RCU_READ_LOCK_HELD])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/rtnetlink.h], [rcu_read_lock_held])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_RCU_READ_LOCK_HELD])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/rtnetlink.h], [lockdep_rtnl_is_held])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_LOCKDEP_RTNL_IS_HELD])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [[[^@]]proto_data_valid], [OVS_DEFINE([HAVE_PROTO_DATA_VALID])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_PROTO_DATA_VALID])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [rxhash])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_RXHASH])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [u16.*rxhash], [OVS_DEFINE([HAVE_U16_RXHASH])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_U16_RXHASH])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_dst(], [OVS_DEFINE([HAVE_SKB_DST_ACCESSOR_FUNCS])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_DST_ACCESSOR_FUNCS])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_copy_from_linear_data_offset])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_COPY_FROM_LINEAR_DATA_OFFSET])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_reset_tail_pointer])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_RESET_TAIL_POINTER])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_cow_head])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_COW_HEAD])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_transport_header], [OVS_DEFINE([HAVE_SKBUFF_HEADER_HELPERS])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKBUFF_HEADER_HELPERS])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/icmpv6.h], [icmp6_hdr], [OVS_DEFINE([HAVE_ICMP6_HDR])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_ICMP6_HDR])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_warn_if_lro], [OVS_DEFINE([HAVE_SKB_WARN_LRO])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_WARN_LRO])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [consume_skb])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_CONSUME_SKB])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_frag_page])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_FRAG_PAGE])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_has_frag_list])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_HAS_FRAG_LIST])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [__skb_fill_page_desc])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE___SKB_FILL_PAGE_DESC])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_reset_mac_len])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_RESET_MAC_LEN])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_unclone])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_UNCLONE])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_orphan_frags])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_ORPHAN_FRAGS])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_get_hash])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_GET_HASH])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_clear_hash])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_CLEAR_HASH])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [int.skb_zerocopy(], [OVS_DEFINE([HAVE_SKB_ZEROCOPY])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_ZEROCOPY])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [l4_rxhash])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_L4_RXHASH])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_ensure_writable])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_ENSURE_WRITABLE])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_vlan_pop])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_VLAN_POP])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [skb_vlan_push])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SKB_VLAN_PUSH])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/types.h], [bool], [OVS_DEFINE([HAVE_BOOL_TYPE])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_BOOL_TYPE])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/types.h], [__wsum], [OVS_DEFINE([HAVE_CSUM_TYPES])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_CSUM_TYPES])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/uapi/linux/types.h], [__wsum], [OVS_DEFINE([HAVE_CSUM_TYPES])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_CSUM_TYPES])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/checksum.h], [csum_replace4])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_CSUM_REPLACE4])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/checksum.h], [csum_unfold])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_CSUM_UNFOLD])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/genetlink.h], [genl_has_listeners])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_GENL_HAS_LISTENERS])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/genetlink.h], [mcgrp_offset])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_MCGRP_OFFSET])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/genetlink.h], [parallel_ops])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_PARALLEL_OPS])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/genetlink.h], [genlmsg_new_unicast])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_GENLMSG_NEW_UNICAST])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/gre.h], [gre_cisco_register])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_GRE_CISCO_REGISTER])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/gre.h], [gre_handle_offloads])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_GRE_HANDLE_OFFLOADS])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/ip_tunnels.h], [iptunnel_xmit.*net], [OVS_DEFINE([HAVE_IPTUNNEL_XMIT_NET])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_IPTUNNEL_XMIT_NET])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/ipv6.h], [IP6_FH_F_SKIP_RH])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_IP6_FH_F_SKIP_RH])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_get_be16])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_NLA_GET_BE16])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_put_be16])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_NLA_PUT_BE16])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_put_be32])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_NLA_PUT_BE32])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_put_be64])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_NLA_PUT_BE64])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_find_nested])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_NLA_FIND_NESTED])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/netlink.h], [nla_is_last])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_NLA_IS_LAST])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/sctp/checksum.h], [sctp_compute_cksum])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_SCTP_COMPUTE_CKSUM])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/if_vlan.h], [ADD_ALL_VLANS_CMD], [OVS_DEFINE([HAVE_VLAN_BUG_WORKAROUND])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_VLAN_BUG_WORKAROUND])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/if_vlan.h], [vlan_insert_tag_set_proto])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_VLAN_INSERT_TAG_SET_PROTO])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/if_vlan.h], [__vlan_insert_tag])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE___VLAN_INSERT_TAG])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/u64_stats_sync.h], [u64_stats_fetch_begin_irq])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_U64_STATS_FETCH_BEGIN_IRQ])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/openvswitch.h], [openvswitch_handle_frame_hook], [OVS_DEFINE([HAVE_RHEL_OVS_HOOK])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_RHEL_OVS_HOOK])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/vxlan.h], [vxlan_xmit_skb])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_VXLAN_XMIT_SKB])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/vxlan.h], [bool xnet], [OVS_DEFINE([HAVE_VXLAN_XMIT_SKB_XNET_ARG])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_VXLAN_XMIT_SKB_XNET_ARG])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/net/udp.h], [udp_flow_src_port], [OVS_DEFINE([HAVE_UDP_FLOW_SRC_PORT])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_UDP_FLOW_SRC_PORT])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/linux/skbuff.h], [ignore_df:1], [OVS_DEFINE([HAVE_IGNORE_DF_RENAME])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_IGNORE_DF_RENAME])
+m4trace:configure.ac:163: -1- OVS_GREP_IFELSE([$KSRC/include/uapi/linux/netdevice.h], [NET_NAME_UNKNOWN], [OVS_DEFINE([HAVE_NET_NAME_UNKNOWN])])
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_NET_NAME_UNKNOWN])
+m4trace:configure.ac:163: -1- OVS_CHECK_LOG2_H
+m4trace:configure.ac:163: -1- OVS_DEFINE([HAVE_LOG2_H])
+m4trace:configure.ac:163: -1- AM_CONDITIONAL([LINUX_ENABLED], [test -n "$KBUILD"])
+m4trace:configure.ac:163: -1- m4_pattern_allow([^LINUX_ENABLED_TRUE$])
+m4trace:configure.ac:163: -1- m4_pattern_allow([^LINUX_ENABLED_FALSE$])
+m4trace:configure.ac:163: -1- _AM_SUBST_NOTMAKE([LINUX_ENABLED_TRUE])
+m4trace:configure.ac:163: -1- _AM_SUBST_NOTMAKE([LINUX_ENABLED_FALSE])
+m4trace:configure.ac:164: -1- OVS_CHECK_DPDK
+m4trace:configure.ac:164: -1- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
+../../lib/autoconf/general.m4:1481: AC_ARG_WITH is expanded from...
+acinclude.m4:163: OVS_CHECK_DPDK is expanded from...
+configure.ac:164: the top level])
+m4trace:configure.ac:164: -1- m4_pattern_allow([^DPDK_vswitchd_LDFLAGS$])
+m4trace:configure.ac:164: -1- m4_pattern_allow([^DPDK_NETDEV$])
+m4trace:configure.ac:164: -1- AM_CONDITIONAL([DPDK_NETDEV], [test -n "$RTE_SDK"])
+m4trace:configure.ac:164: -1- m4_pattern_allow([^DPDK_NETDEV_TRUE$])
+m4trace:configure.ac:164: -1- m4_pattern_allow([^DPDK_NETDEV_FALSE$])
+m4trace:configure.ac:164: -1- _AM_SUBST_NOTMAKE([DPDK_NETDEV_TRUE])
+m4trace:configure.ac:164: -1- _AM_SUBST_NOTMAKE([DPDK_NETDEV_FALSE])
+m4trace:configure.ac:165: -1- OVS_CHECK_PRAGMA_MESSAGE
+m4trace:configure.ac:165: -1- m4_pattern_allow([^HAVE_PRAGMA_MESSAGE$])
+m4trace:configure.ac:166: -1- m4_pattern_allow([^OVS_CFLAGS$])
+m4trace:configure.ac:167: -1- m4_pattern_allow([^OVS_LDFLAGS$])
+m4trace:configure.ac:186: -1- AM_SILENT_RULES
+m4trace:configure.ac:186: -1- m4_pattern_allow([^AM_V$])
+m4trace:configure.ac:186: -1- AM_SUBST_NOTMAKE([AM_V])
+m4trace:configure.ac:186: -1- _AM_SUBST_NOTMAKE([AM_V])
+m4trace:configure.ac:186: -1- m4_pattern_allow([^AM_DEFAULT_V$])
+m4trace:configure.ac:186: -1- AM_SUBST_NOTMAKE([AM_DEFAULT_V])
+m4trace:configure.ac:186: -1- _AM_SUBST_NOTMAKE([AM_DEFAULT_V])
+m4trace:configure.ac:186: -1- m4_pattern_allow([^AM_DEFAULT_VERBOSITY$])
+m4trace:configure.ac:186: -1- m4_pattern_allow([^AM_BACKSLASH$])
+m4trace:configure.ac:186: -1- _AM_SUBST_NOTMAKE([AM_BACKSLASH])
+m4trace:configure.ac:188: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.ac:188: -1- m4_pattern_allow([^LTLIBOBJS$])
+m4trace:configure.ac:188: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
+m4trace:configure.ac:188: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
+m4trace:configure.ac:188: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
+m4trace:configure.ac:188: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
+m4trace:configure.ac:188: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
+m4trace:configure.ac:188: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
+m4trace:configure.ac:188: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS

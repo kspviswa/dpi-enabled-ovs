@@ -1,0 +1,6 @@
+2015-03-30T17:44:20.940Z|00001|vlog|INFO|opened log file /home/kspviswa/workspace/ovs/tutorial/sandbox/ovs-vswitchd.log
+2015-03-30T17:44:20.945Z|00002|ovs_numa|INFO|Discovered 0 NUMA nodes and 0 CPU cores
+2015-03-30T17:44:20.945Z|00003|reconnect|INFO|unix:/home/kspviswa/workspace/ovs/tutorial/sandbox/db.sock: connecting...
+2015-03-30T17:44:20.946Z|00004|reconnect|INFO|unix:/home/kspviswa/workspace/ovs/tutorial/sandbox/db.sock: connected
+2015-03-30T17:44:20.950Z|00005|bridge|INFO|ovs-vswitchd (Open vSwitch) 2.3.90
+2015-03-30T17:44:38.769Z|00006|memory|INFO|1564 kB peak resident set size after 17.8 seconds

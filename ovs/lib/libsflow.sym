@@ -1,0 +1,4 @@
+libsflow_1 {
+global:
+        *;
+};

@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libofproto
+Description: OVSDB library of Open vSwitch
+Version: 2.3.90
+Libs: -L${libdir} -lovsdb
+Libs.private: -latomic -lpthread -lrt -lm 
+Cflags: -I${includedir}

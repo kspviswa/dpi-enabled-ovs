@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libopenvswitch
+Description: Open vSwitch library
+Version: 2.3.90
+Libs: -L${libdir} -lopenvswitch
+Libs.private: -latomic -lpthread -lrt -lm 
+Cflags: -I${includedir}

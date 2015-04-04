@@ -1,0 +1,34 @@
+lib/sort.lo: lib/sort.c /usr/include/stdc-predef.h config.h lib/sort.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h lib/random.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h /usr/include/stdint.h \
+ /usr/include/features.h /usr/include/i386-linux-gnu/sys/cdefs.h \
+ /usr/include/i386-linux-gnu/bits/wordsize.h \
+ /usr/include/i386-linux-gnu/gnu/stubs.h \
+ /usr/include/i386-linux-gnu/gnu/stubs-32.h \
+ /usr/include/i386-linux-gnu/bits/wchar.h
+
+/usr/include/stdc-predef.h:
+
+config.h:
+
+lib/sort.h:
+
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h:
+
+lib/random.h:
+
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h:
+
+/usr/include/stdint.h:
+
+/usr/include/features.h:
+
+/usr/include/i386-linux-gnu/sys/cdefs.h:
+
+/usr/include/i386-linux-gnu/bits/wordsize.h:
+
+/usr/include/i386-linux-gnu/gnu/stubs.h:
+
+/usr/include/i386-linux-gnu/gnu/stubs-32.h:
+
+/usr/include/i386-linux-gnu/bits/wchar.h:
