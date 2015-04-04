@@ -49,6 +49,7 @@
 #include "openvswitch/vlog.h"
 #include "lib/vswitch-idl.h"
 #include "lib/netdev-dpdk.h"
+#include "../ofproto/dpi/dpi-interface.h"
 
 VLOG_DEFINE_THIS_MODULE(vswitchd);
 
@@ -149,12 +150,14 @@ parse_options(int argc, char *argv[], char **unixctl_pathp)
         OPT_DISABLE_SYSTEM,
         DAEMON_OPTION_ENUMS,
         OPT_DPDK,
+        OPT_DPI
     };
     static const struct option long_options[] = {
         {"help",        no_argument, NULL, 'h'},
         {"version",     no_argument, NULL, 'V'},
         {"mlockall",    no_argument, NULL, OPT_MLOCKALL},
         {"unixctl",     required_argument, NULL, OPT_UNIXCTL},
+        {"dpi-engine",	required_argument, NULL, OPT_DPI},
         DAEMON_LONG_OPTIONS,
         VLOG_LONG_OPTIONS,
         STREAM_SSL_LONG_OPTIONS,
@@ -218,6 +221,24 @@ parse_options(int argc, char *argv[], char **unixctl_pathp)
             ovs_fatal(0, "--dpdk must be given at beginning of command line.");
             break;
 
+        case OPT_DPI:
+        	{
+        		if(optarg)
+        		{
+        			char szErrMsgBuf[50];
+        			int result = dpiInit(optarg, szErrMsgBuf);
+        			if(result < 0)
+        			{
+        				ovs_fatal(0, "Unable to init --dpi-engine. Error : %s", szErrMsgBuf);
+        			}
+        		}
+        		else
+        		{
+        			ovs_fatal(0, "--dpi-engine arg is empty");
+        		}
+        	}
+        	break;
+
         default:
             abort();
         }
@@ -255,6 +276,7 @@ usage(void)
            "  --dpdk options          Initialize DPDK datapath.\n");
     printf("\nOther options:\n"
            "  --unixctl=SOCKET        override default control socket name\n"
+    	   "  --dpi-engine=<path to engine>  load dpi processing engine\n"
            "  -h, --help              display this help message\n"
            "  -V, --version           display version information\n");
     exit(EXIT_SUCCESS);

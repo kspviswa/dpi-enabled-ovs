@@ -1973,6 +1973,14 @@ parse_odp_packet(const struct dpif_netlink *dpif, struct ofpbuf *buf,
     type = (genl->cmd == OVS_PACKET_CMD_MISS ? DPIF_UC_MISS
             : genl->cmd == OVS_PACKET_CMD_ACTION ? DPIF_UC_ACTION
             : -1);
+
+    // Special processing for DPI [kspviswa]
+
+    if(genl->cmd == OVS_PACKET_CMD_DPI)
+    {
+    	type = DPIF_UC_DPI;
+    }
+
     if (type < 0) {
         return EINVAL;
     }

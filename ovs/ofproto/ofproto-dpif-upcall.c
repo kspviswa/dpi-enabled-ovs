@@ -40,6 +40,9 @@
 #include "unixctl.h"
 #include "openvswitch/vlog.h"
 
+/* DPI special interface [kspviswa] */
+#include "dpi/dpi-interface.h"
+
 #define MAX_QUEUE_LENGTH 512
 #define UPCALL_MAX_BATCH 64
 #define REVALIDATE_MAX_BATCH 50
@@ -1123,6 +1126,7 @@ process_upcall(struct udpif *udpif, struct upcall *upcall,
     return EAGAIN;
 }
 
+
 static void
 handle_upcalls(struct udpif *udpif, struct upcall *upcalls,
                size_t n_upcalls)
@@ -1168,6 +1172,15 @@ handle_upcalls(struct udpif *udpif, struct upcall *upcalls,
             /* Remove the flow vlan tags inserted by vlan splinter logic
              * to ensure megaflow masks generated match the data path flow. */
             CONST_CAST(struct flow *, upcall->flow)->vlan_tci = 0;
+        }
+
+        /**
+         * DPI Processing - kspviswa
+         */
+        if(upcall->type = DPIF_UC_DPI)
+        {
+        	VLOG_INFO("[kspviswa] packet arrived for DPI :-) ");
+        	dpiProcessPacket(packet->frame, packet->size_);
         }
 
         /* Do not install a flow into the datapath if:

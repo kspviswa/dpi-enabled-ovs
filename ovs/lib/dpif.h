@@ -760,6 +760,7 @@ void dpif_operate(struct dpif *, struct dpif_op **ops, size_t n_ops);
 enum dpif_upcall_type {
     DPIF_UC_MISS,               /* Miss in flow table. */
     DPIF_UC_ACTION,             /* OVS_ACTION_ATTR_USERSPACE action. */
+    DPIF_UC_DPI,		/* DPI Action. [kspviswa] */
     DPIF_N_UC_TYPES
 };
 

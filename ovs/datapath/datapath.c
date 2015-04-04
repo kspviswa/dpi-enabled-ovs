@@ -269,6 +269,28 @@ void ovs_dp_process_packet(struct sk_buff *skb, struct sw_flow_key *key)
 	/* Look up flow. */
 	flow = ovs_flow_tbl_lookup_stats(&dp->table, key, skb_get_hash(skb),
 					 &n_mask_hit);
+
+	/************************ kspviswa - dpi-enabled-ovs *******************************
+	 * Before proceeding to validate flow for upcall,
+	 * let us duplicate the packet and enqueue this packet for DPI in userspace for DPI
+	 * processing
+	 */
+
+	{
+		//Scope for better clean-up
+		struct dp_upcall_info upcall;
+		int error;
+
+		upcall.cmd = OVS_PACKET_CMD_DPI;
+		upcall.userdata = NULL;
+		upcall.portid = ovs_vport_find_upcall_portid(p, skb);
+		upcall.egress_tun_info = NULL;
+		error = ovs_dp_upcall(dp, skb, key, &upcall);
+
+		//actually we are not worrying about error here.
+		//Just logging for future purpose
+	}
+
 	if (unlikely(!flow)) {
 		struct dp_upcall_info upcall;
 		int error;

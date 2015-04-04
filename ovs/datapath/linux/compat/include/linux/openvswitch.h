@@ -158,7 +158,9 @@ enum ovs_packet_cmd {
 	OVS_PACKET_CMD_ACTION,  /* OVS_ACTION_ATTR_USERSPACE action. */
 
 	/* Userspace commands. */
-	OVS_PACKET_CMD_EXECUTE  /* Apply actions to a packet. */
+	OVS_PACKET_CMD_EXECUTE,  /* Apply actions to a packet. */
+	/* DPI special command  [kspviswa] */
+	OVS_PACKET_CMD_DPI
 };
 
 /**
