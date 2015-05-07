@@ -21,7 +21,7 @@ function toArray(obj) {
 
 function printJsonArray(page)
 {
-var url = "http://192.168.56.101:3000/db/" + page;
+var url = "http://localhost:3000/db/" + page;
                   $.getJSON(url,  function(data) {
 			   //alert(jd);
 			   //console.log(jd);
@@ -93,7 +93,7 @@ var url = "http://192.168.56.101:3000/db/" + page;
          $(document).ready(function() {
             $("#driver").click(function(event){
 			 //  alert('hi');
-               $.getJSON('http://192.168.56.101:3000/db',  function(data) {
+               $.getJSON('http://localhost:3000/db',  function(data) {
 			   //alert(jd);
 			   //console.log(jd);
 			   //window.my_jd = jd;
