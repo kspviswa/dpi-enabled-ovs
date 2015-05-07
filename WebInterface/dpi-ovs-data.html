@@ -1,0 +1,198 @@
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="mrjsontable/scripts/mrjsontable.js"></script>
+<script src="mrjsontable/scripts/json2.js"></script>
+<link href="mrjsontable/css/mrjsontable.css" rel="stylesheet" />
+<script type="text/javascript" language="javascript">
+function toArray(obj) {
+    var result = [];
+    for (var prop in obj) {
+        var value = obj[prop];
+        if (typeof value === 'object') {
+            result.push(toArray(value)); // <- recursive call
+        }
+        else {
+            result.push(value);
+        }
+    }
+    return result;
+}
+
+function printJsonArray(page)
+{
+var url = "http://192.168.56.101:3000/db/" + page;
+                  $.getJSON(url,  function(data) {
+			   //alert(jd);
+			   //console.log(jd);
+			   //window.my_jd = jd;
+			   //var jds = JSON.stringify(jd);		   
+			   //var data = jd[0][0];
+			   $("#mydiv").html("");
+			   $("#mydiv").mrjsontable({
+			   columns: [
+						{
+							heading: "Protocol",
+							data: "protocol", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Sender Host",
+							data: "host_a.name", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Sender port",
+							data: "host_a.port", // see how this links to the json object further down
+							type: "int", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Reciever Host",
+							data: "host_b.name", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Reciever port",
+							data: "host_n.port", // see how this links to the json object further down
+							type: "int", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Protocol Id",
+							data: "detected.protocol", // see how this links to the json object further down
+							type: "int", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Protcol name",
+							data: "detected.protocol", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Bytes",
+							data: "bytes", // see how this links to the json object further down
+							type: "int", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "URL",
+							data: "host.server.name", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						}
+					], data
+			   });
+			});
+}
+
+         $(document).ready(function() {
+            $("#driver").click(function(event){
+			 //  alert('hi');
+               $.getJSON('http://192.168.56.101:3000/db',  function(data) {
+			   //alert(jd);
+			   //console.log(jd);
+			   //window.my_jd = jd;
+			   //var jds = JSON.stringify(jd);		   
+			   //var data = jd[0][0];
+			   var innerH;
+			   $("#mydiv").html("");
+			   for(i=0; i< data["db"].length; i++)
+			   {
+			     var j = i+1;
+			     innerH += "<option id=" + j + "> Bucket " + j + " </option>"; 
+			   }
+			  
+		  
+		       $("#pages").html(innerH);
+			   $("#prompt").html("<b>                       Select the Bucket you wanna fetch !!!! <b>");
+	
+			   $("#mydiv").mrjsontable({
+			   columns: [
+						{
+							heading: "Protocol",
+							data: "protocol", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Sender Host",
+							data: "host_a.name", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Sender port",
+							data: "host_a.port", // see how this links to the json object further down
+							type: "int", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Reciever Host",
+							data: "host_b.name", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Reciever port",
+							data: "host_n.port", // see how this links to the json object further down
+							type: "int", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Protocol Id",
+							data: "detected.protocol", // see how this links to the json object further down
+							type: "int", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Protcol name",
+							data: "detected.protocol", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "Bytes",
+							data: "bytes", // see how this links to the json object further down
+							type: "int", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						},
+						{
+							heading: "URL",
+							data: "host.server.name", // see how this links to the json object further down
+							type: "string", // can be string, int, float, datetime
+							sortable: true, // is the field sortable (optional defaults to false)
+						}
+					], data
+			   });
+			});
+         });
+		 
+		 $("select#pages").on('change',function(){
+    var id = $(this).children(":selected").attr("id");
+    printJsonArray(id);
+});
+	});	 
+</script>
+</head>
+<body>
+<center><h1> DPI Enabled OVS - kspviswa </h1></center>
+<p>
+<hr>
+<table>
+<tr>
+<button id='driver'>Get DPI data from OVS</button>
+</tr>
+<tr>
+<div id="mydiv"></div>
+</tr>
+<tr>
+<td><h3><select id="pages"></select></h3></td><td><center><div id="prompt"> </div></center></td>
+</tr>
+</table>
+</body>
+</html>
