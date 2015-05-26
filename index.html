@@ -15,8 +15,7 @@
   <body>
     <div class="wrapper">
       <header>
-        <!--h1>DPI enabled OVS</h1-->
-        <img src="https://cloud.githubusercontent.com/assets/7476271/7798399/038a6a02-0317-11e5-9363-eb4f2a19fa05.png"></img>
+        <h1>DPI enabled OVS</h1>
         <p>Extending Open vSwitch with Deep Packet Inspection functionalities</p>
 
         <p class="view"><a href="https://github.com/kspviswa/dpi-enabled-ovs">View the Project on GitHub <small>kspviswa/dpi-enabled-ovs</small></a></p>
@@ -30,81 +29,88 @@
       </header>
       <section>
         <h3>
-<a id="what-is-dpi" class="anchor" href="#what-is-dpi" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is DPI</h3>
+<a id="what-is-this-project-about-" class="anchor" href="#what-is-this-project-about-" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is this project about ?</h3>
+
+<p>This a fork of <a href="https://github.com/openvswitch/ovs">Open vSwitch</a>, with <b>additional interface to load 3rd party / external / customer DPI engine </b> on top of Open vSwitch.
+This project is part of my MS Thesis (BITS). </p>
+
+<h3>
+<a id="why-dpi--ovs-" class="anchor" href="#why-dpi--ovs-" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why DPI + OVS ?</h3>
 
 <p>By definition, DPI – Deep Packet Inspection means, determining the application (Ex Youtube, Skype etc) by analyzing the Ethernet frames. Advantage of DPI is that, enterprise level decisions can be made based upon the analyzed data.  (Ex. Boost the bandwidth, Determine the application level network usage etc.)</p>
 
 <p>It is important to understand that, DPI is not, merely a packet analysis, but it also provides capabilities for network steering upon the data it receives from the network. Though the traffic analysis can be made centralized in the controller plane, the effective classification of packet can be done, only at the switch level.</p>
-
-<h3>
-<a id="why-dpi-in-sdn-ecosystem" class="anchor" href="#why-dpi-in-sdn-ecosystem" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why DPI in SDN ecosystem</h3>
 
 <p>If you look at the present scenario in traditional networking ecosystem, DPI is performed by highly specialized hardware with proprietary DPI techniques. This makes sense, as long as the network is made of traditional hardware oriented set ups. Industry had started to embrace the SDN ecosystem, where-in, any commodity hardware can be used to virtualize network functions (NFV). Hence DPI in specialized hardware doesn’t make sense anymore. DPI has to be even virtualized.</p>
 
 <h3>
 <a id="dpi-in-ovs" class="anchor" href="#dpi-in-ovs" aria-hidden="true"><span class="octicon octicon-link"></span></a>DPI in OVS</h3>
 
-<p>Presently there is no DPI enabled soft switch, especially in the SDN ecosystem. The aim of this dissertation is to provide DPI functionalities as part of Open vSwitch, so that any controller can take advantage of the DPI information and leverage the DPI functionalities to upper management layers. </p>
+<p>Presently there is no DPI enabled soft switch, especially in the SDN ecosystem. The aim of this project ( part of my MS Thesis in BITS) is to provide DPI functionalities as part of Open vSwitch, so that any controller can take advantage of the DPI information and leverage the DPI functionalities to upper management layers. </p>
 
 <h3>
-<a id="proof-of-concept---demo" class="anchor" href="#proof-of-concept---demo" aria-hidden="true"><span class="octicon octicon-link"></span></a>Proof Of Concept - demo</h3>
+<a id="high-level-design" class="anchor" href="#high-level-design" aria-hidden="true"><span class="octicon octicon-link"></span></a>High level design</h3>
 
-<p>The scope of PoC to get hands-on in bringing DPI framework under SDN ecosystem. In order to do this, SNORT (popular DPI engine) was integrated with OVS and end to end DPI flow was captured and tested. This proves the feasibility of project thesis that I had took for my dissertation work.</p>
+<p>The following fig, gives high-level overview on how DPI engine can be integrated.</p>
 
-<p>Below is the topology that was used to accomplish the PoC</p>
+<p><img src="https://cloud.githubusercontent.com/assets/7476271/7811632/9a58fd88-03c9-11e5-8d1a-a6b539179193.png" alt="High-level-design"></p>
 
-<p><img src="https://cloud.githubusercontent.com/assets/7476271/6752040/e3aef3ac-cf30-11e4-94cd-5f6f61a9ff0a.jpg" alt="topology switch"></p>
+<ul>
+<li>
+<code>packet_clone for DPI</code> is very much necessary to create a new packet, as not all packets, reach <code>ovs upcall handler</code> due to flow cache that is maintained in kernel.</li>
+<li>
+<code>Opaque DPI Interface</code> clearly abstracts Open vSwitch to outside world. So dynamically, any 3rd party / external / customer DPI engine can be hooked with OVS seamlessly.</li>
+</ul>
 
-<p>Please refer <a href="https://github.com/kspviswa/dpi-enabled-ovs/wiki/Environment-Set-up">wiki</a> for setting up above topology.</p>
+<h3>
+<a id="packet-flow-with-new-dpi-plugin" class="anchor" href="#packet-flow-with-new-dpi-plugin" aria-hidden="true"><span class="octicon octicon-link"></span></a>Packet flow with new DPI plugin</h3>
+
+<p><img src="https://cloud.githubusercontent.com/assets/7476271/7811649/ad68b116-03c9-11e5-8285-389982720a58.png" alt="packet flow"> </p>
+
+<p>As you can see, for every incoming packet (green), corresponding DPI packets (black) will be cloned. As per existing logic, some packets (blue) will reach userspace for special processing, however all DPI packets (black) will reach DPI handler in userspace. This is very much necessary for any DPI engine. More packets == More data to analyse == Better results.</p>
+
+<h3>
+<a id="project-highlights" class="anchor" href="#project-highlights" aria-hidden="true"><span class="octicon octicon-link"></span></a>Project highlights</h3>
+
+<ul>
+<li>A new interface <code>dpi_plugin.h</code> which integrates OVS with any 3rd party / custom / DPI plugin.</li>
+<li>Kernel datapath modified to clone all the incoming packets to send it to userspace with special label fpr DPI</li>
+<li>A new <code>DpiWriteLog()</code> function, which enables plugin developers to log their contents directly into OVS logging framework. A handly tool for debugging &amp; maintenance.</li>
+<li>A sample DPI plugin <code>kspviswa-nDPI-plugin</code> that will demonstrate the power of <code>dpi-enabled-ovs</code>
+</li>
+<li>* This plugin comes with its corresponding web-based application to view the DPI info at business application level.</li>
+</ul>
+
+<h3>
+<a id="sample-dpi-plugin" class="anchor" href="#sample-dpi-plugin" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sample DPI plugin</h3>
+
+<p>Inorder to demonstrate the power of DPI enabled OVS, I wrote a sample plugin, that will collect the DPI data directly via OVS, powered by <a href="https://github.com/ntop/nDPI">nDPI engine</a>. Then with help of <a href="https://developers.google.com/chart/">Google charts</a> API, I wrote a sample visualization application (analogous to business application on controller side) to harness the DPI information.</p>
 
 <h2>
-<a id="end-end-flow" class="anchor" href="#end-end-flow" aria-hidden="true"><span class="octicon octicon-link"></span></a>End-End Flow</h2>
+<a id="mode-of-deployment" class="anchor" href="#mode-of-deployment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mode of deployment</h2>
 
-<p>Just by adding DPI along with OVS, doesn't make any sense, until there is a full end-end solution. We came up with below components, comprising of middleware and north-bound business applications to provision the OVS based on the analysis that is done on DPI data.</p>
+<p>I had introduced a command-line switch to dynamically load any DPI plugin. Here is the syntax</p>
 
-<p><img src="https://cloud.githubusercontent.com/assets/7476271/6752049/f534f892-cf30-11e4-980a-cd9ff0d7f3cf.jpg" alt="components"></p>
+<p><code>sudo ovs-vswitchd --dpi-engine=&lt;path to plugin&gt;</code></p>
 
-<p>Following image, provides high-level traffic flow between the components.</p>
+<h2>
+<a id="high-level-design-1" class="anchor" href="#high-level-design-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>High level design</h2>
 
-<p><img src="https://cloud.githubusercontent.com/assets/7476271/6752058/ffc20af2-cf30-11e4-91eb-8eed70d97ee9.jpg" alt="traffic-flow"></p>
+<p>Here is the high level design of the plugin</p>
 
-<p>Below video will display the DPI+OVS in action.</p>
+<p><img src="https://cloud.githubusercontent.com/assets/7476271/7811671/d4c92f88-03c9-11e5-9118-ff0ca5c334df.png" alt="dpi plugin"></p>
 
-<p><a href="http://www.youtube.com/watch?v=g4k0e-S2n04"><img src="https://cloud.githubusercontent.com/assets/7476271/6979652/56d60a2c-da04-11e4-9e19-67d98651aa9a.jpg" alt="DPI Enabled OVS"></a></p>
+<h2>
+<a id="demo-output" class="anchor" href="#demo-output" aria-hidden="true"><span class="octicon octicon-link"></span></a>Demo Output</h2>
 
-<h3>
-<a id="ovs--libprotoident" class="anchor" href="#ovs--libprotoident" aria-hidden="true"><span class="octicon octicon-link"></span></a>OVS + Libprotoident</h3>
+<p>Here is the output from the business application. </p>
 
-<p>From PoC, we inferred the following.</p>
-
-<ul>
-<li>Complete end-end DPI provisioning is possible in SDN eco-system.</li>
-<li>OVS can be deployed along with DPI in gateway deployments, thereby DPI becomes completely virtualized and programmable.</li>
-<li>By distributing the data providers &amp; consumers, it is easily match up the performance of switch, while doing DPI on top of normal switching.</li>
-<li>Several management &amp; business applications can be built on top of middle ware, which is asynchronous to OVS, thereby leveraging the scalablity &amp; performance.</li>
-</ul>
-
-<p>However, there were also some down-side on using SNORT with MySQL</p>
-
-<ul>
-<li>
-<code>SNORT</code> wants to have the interfaces to be sniffed before-hand. i.e If a port is attached to OVS dynamically (consider orchestration), then SNORT has to be restarted to listen the new interface.</li>
-<li>
-<code>SNORT MySQL</code> bindings are depreciated from SNORT 3+ releases. That means, if SNORT's internal schema changes in future versions, we have no control over the MySQL schema. This post serious concerns in adapting SNORT + MySQL in future SNORT versions.</li>
-<li>
-<code>SNORT</code> is not available as library / plugin to seamlessly integrate with OVS. It is  available as stand-alone. Though we attempted to build a library version of SNORT, the effort will not worth it, considering the above limitation.</li>
-</ul>
-
-<p>As a result, we select <code>libprotoident</code> to be successor for <code>SNORT</code> in place of DPI framework. Initial feasiblity study with <code>libprotoident</code> proves the usablity of this library both as a stand-alone tool and as API framework. For the curious, I had document steps to get started with <code>libprotoident</code> <a href="https://github.com/kspviswa/dpi-enabled-ovs/wiki/Setting-up-libprotoident">here</a>.</p>
+<p><img src="https://cloud.githubusercontent.com/assets/7476271/7811689/ee441c98-03c9-11e5-8fbd-181bfb49e6eb.png" alt="dpi visio"></p>
 
 <h3>
-<a id="future-design-of-ovs--dpi" class="anchor" href="#future-design-of-ovs--dpi" aria-hidden="true"><span class="octicon octicon-link"></span></a>Future design of OVS + DPI</h3>
+<a id="further-development--contact" class="anchor" href="#further-development--contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Further development &amp; contact</h3>
 
-<p>Highly encouraged with the outcome of PoC, we came up with below design to integrate <code>libprotoident</code> with OVS.</p>
-
-<p><img src="https://cloud.githubusercontent.com/assets/7476271/6752555/8c70d7a4-cf35-11e4-8720-d387df444682.jpg" alt="design"></p>
-
-<p>Development is in progress and this page will be updated as and when some considerable amount of progress is being made.</p>
+<p>This project is part of my MS thesis. Feel free to contact me if you wish to take this project to next step, want to know how to deploy / enhance etc.</p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/kspviswa">kspviswa</a></p>
